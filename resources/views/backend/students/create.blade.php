@@ -1,223 +1,480 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="roles">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
 
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h2 class="text-gray-700 uppercase font-bold">Add New Student</h2>
-            </div>
-            <div class="flex flex-wrap items-center">
-                <a href="{{ route('student.index') }}" class="bg-gray-700 text-white text-sm uppercase py-2 px-4 flex items-center rounded">
-                    <svg class="w-3 h-3 fill-current" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="long-arrow-alt-left" class="svg-inline--fa fa-long-arrow-alt-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M134.059 296H436c6.627 0 12-5.373 12-12v-56c0-6.627-5.373-12-12-12H134.059v-46.059c0-21.382-25.851-32.09-40.971-16.971L7.029 239.029c-9.373 9.373-9.373 24.569 0 33.941l86.059 86.059c15.119 15.119 40.971 4.411 40.971-16.971V296z"></path></svg>
-                    <span class="ml-2 text-xs font-semibold">Back</span>
-                </a>
-            </div>
-        </div>
-        <!-- Log on to codeastro.com for more projects -->
-        <div class="table w-full mt-8 bg-white rounded">
-            <form action="{{ route('student.store') }}" method="POST" class="w-full max-w-xl px-6 py-12" enctype="multipart/form-data">
-                @csrf
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Name
-                        </label>
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .glass {
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .gradient-border {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            padding: 2px;
+            border-radius: 1rem;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: calc(1rem - 2px);
+        }
+    </style>
+
+    <div class="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-indigo-100 py-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Header avec animation -->
+            <div class="flex items-center justify-between mb-8 animate-fadeIn">
+                <div class="relative">
+                    <h1
+                        class="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                        Ajouter un Étudiant
+                    </h1>
+                    <div
+                        class="absolute -bottom-2 left-0 w-32 h-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full">
                     </div>
-                    <div class="md:w-2/3">
-                        <input name="name" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" value="{{ old('name') }}">
-                        @error('name')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Email
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="email" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="email" value="{{ old('email') }}">
-                        @error('email')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Password
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="password" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="password">
-                        @error('password')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Roll Number
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="roll_number" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="number" value="{{ old('roll_number') }}">
-                        @error('roll_number')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Phone
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="phone" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" value="{{ old('phone') }}">
-                        @error('phone')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Gender
-                        </label>
-                    </div>
-                    <!-- Log on to codeastro.com for more projects -->
-                    <div class="md:w-2/3">
-                        <div class="flex flex-row items-center">
-                            <label class="block text-gray-500 font-bold">
-                                <input name="gender" class="mr-2 leading-tight" type="radio" value="male">
-                                <span class="text-sm">Male</span>
-                            </label>
-                            <label class="ml-4 block text-gray-500 font-bold">
-                                <input name="gender" class="mr-2 leading-tight" type="radio" value="female">
-                                <span class="text-sm">Female</span>
-                            </label>
-                            <label class="ml-4 block text-gray-500 font-bold">
-                                <input name="gender" class="mr-2 leading-tight" type="radio" value="other">
-                                <span class="text-sm">Other</span>
-                            </label>
-                        </div>
-                        @error('gender')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Date of Birth
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="dateofbirth" id="datepicker-sc" autocomplete="off" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" value="{{ old('dateofbirth') }}">
-                        @error('dateofbirth')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Current Address
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="current_address" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" value="{{ old('current_address') }}">
-                        @error('current_address')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Permanent Address
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="permanent_address" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" value="{{ old('permanent_address') }}">
-                        @error('permanent_address')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Assign Class
-                        </label>
-                    </div>
-                    <div class="md:w-2/3 block text-gray-600 font-bold">
-                        <div class="relative">
-                            <select name="class_id" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-                                <option value="">--Select Class--</option>
-                                @foreach ($classes as $class)
-                                    <option value="{{ $class->id }}">{{ $class->class_name }}</option>
-                                @endforeach
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Student's Parent
-                        </label>
-                    </div>
-                    <div class="md:w-2/3 block text-gray-600 font-bold">
-                        <div class="relative">
-                            <select name="parent_id" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-                                <option value="">--Select Parent--</option>
-                                @foreach ($parents as $parent)
-                                    <option value="{{ $parent->id }}">{{ $parent->user->name }}</option>
-                                @endforeach
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Picture :
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="profile_picture" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="file">
-                    </div>
+                    <p class="mt-4 text-gray-600 font-medium">Créez un nouveau profil étudiant avec toutes les informations
+                        nécessaires</p>
                 </div>
 
-                <div class="md:flex md:items-center">
-                    <div class="md:w-1/3"></div>
-                    <div class="md:w-2/3">
-                        <button class="shadow bg-blue-500 hover:bg-blue-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit">
-                            Submit
-                        </button>
-                    </div>
+                <div class="animate-float">
+                    <a href="{{ route('student.index') }}"
+                        class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-gray-700 to-gray-800 text-white font-bold rounded-2xl shadow-xl hover:from-gray-800 hover:to-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                        <svg class="w-5 h-5 mr-3 transition-transform group-hover:-translate-x-1" fill="currentColor"
+                            viewBox="0 0 448 512">
+                            <path
+                                d="M134.059 296H436c6.627 0 12-5.373 12-12v-56c0-6.627-5.373-12-12-12H134.059v-46.059c0-21.382-25.851-32.09-40.971-16.971L7.029 239.029c-9.373 9.373-9.373 24.569 0 33.941l86.059 86.059c15.119 15.119 40.971 4.411 40.971-16.971V296z" />
+                        </svg>
+                        Retour aux Étudiants
+                        <div
+                            class="absolute inset-0 bg-white/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                    </a>
                 </div>
-            </form>        
+            </div>
+
+            <!-- Formulaire avec design moderne -->
+            <div class="gradient-border animate-slideIn">
+                <div class="form-container p-8">
+                    <form action="{{ route('student.store') }}" method="POST" enctype="multipart/form-data"
+                        class="space-y-8">
+                        @csrf
+
+                        <!-- Section Informations Personnelles -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                <div
+                                    class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                Informations Personnelles
+                            </h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- Nom -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Nom Complet
+                                    </label>
+                                    <input name="name" type="text" value="{{ old('name') }}"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all duration-300 font-medium"
+                                        placeholder="Entrez le nom complet...">
+                                    @error('name')
+                                        <p class="text-red-500 text-sm flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Email -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                        </svg>
+                                        Adresse Email
+                                    </label>
+                                    <input name="email" type="email" value="{{ old('email') }}"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-200 transition-all duration-300 font-medium"
+                                        placeholder="exemple@email.com">
+                                    @error('email')
+                                        <p class="text-red-500 text-sm flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Mot de passe -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Mot de Passe
+                                    </label>
+                                    <input name="password" type="password"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-4 focus:ring-red-200 transition-all duration-300 font-medium"
+                                        placeholder="Entrez un mot de passe sécurisé...">
+                                    @error('password')
+                                        <p class="text-red-500 text-sm flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Numéro de matricule -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M10 2L3 7v11a1 1 0 001 1h12a1 1 0 001-1V7l-7-5zM9 9a1 1 0 012 0v4a1 1 0 11-2 0V9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Numéro de Matricule
+                                    </label>
+                                    <input name="roll_number" type="number" value="{{ old('roll_number') }}"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-200 transition-all duration-300 font-medium"
+                                        placeholder="Numéro unique...">
+                                    @error('roll_number')
+                                        <p class="text-red-500 text-sm flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Téléphone -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                        </svg>
+                                        Téléphone
+                                    </label>
+                                    <input name="phone" type="text" value="{{ old('phone') }}"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-cyan-500 focus:ring-4 focus:ring-cyan-200 transition-all duration-300 font-medium"
+                                        placeholder="+212 6XX XX XX XX">
+                                    @error('phone')
+                                        <p class="text-red-500 text-sm flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Genre -->
+                                <div class="space-y-3">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Genre
+                                    </label>
+                                    <div class="flex flex-wrap gap-4">
+                                        <label
+                                            class="flex items-center px-4 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-300 transition-colors cursor-pointer">
+                                            <input name="gender" type="radio" value="male" class="sr-only peer">
+                                            <div
+                                                class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:bg-blue-500 peer-checked:border-blue-500 mr-3">
+                                            </div>
+                                            <span class="font-medium text-gray-700">Homme</span>
+                                        </label>
+                                        <label
+                                            class="flex items-center px-4 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-pink-300 transition-colors cursor-pointer">
+                                            <input name="gender" type="radio" value="female" class="sr-only peer">
+                                            <div
+                                                class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:bg-pink-500 peer-checked:border-pink-500 mr-3">
+                                            </div>
+                                            <span class="font-medium text-gray-700">Femme</span>
+                                        </label>
+                                        <label
+                                            class="flex items-center px-4 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-colors cursor-pointer">
+                                            <input name="gender" type="radio" value="other" class="sr-only peer">
+                                            <div
+                                                class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:bg-purple-500 peer-checked:border-purple-500 mr-3">
+                                            </div>
+                                            <span class="font-medium text-gray-700">Autre</span>
+                                        </label>
+                                    </div>
+                                    @error('gender')
+                                        <p class="text-red-500 text-sm flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Informations Complémentaires -->
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                <div
+                                    class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                Informations Complémentaires
+                            </h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- Date de naissance -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-orange-500" fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Date de Naissance
+                                    </label>
+                                    <input name="dateofbirth" id="datepicker-sc" autocomplete="off"
+                                        value="{{ old('dateofbirth') }}"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-200 transition-all duration-300 font-medium"
+                                        placeholder="AAAA-MM-JJ">
+                                    @error('dateofbirth')
+                                        <p class="text-red-500 text-sm flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Photo de profil -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-indigo-500" fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Photo de Profil
+                                    </label>
+                                    <input name="profile_picture" type="file" accept="image/*"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-200 transition-all duration-300 font-medium file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                                </div>
+
+                                <!-- Adresse actuelle -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-teal-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Adresse Actuelle
+                                    </label>
+                                    <input name="current_address" type="text" value="{{ old('current_address') }}"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-200 transition-all duration-300 font-medium"
+                                        placeholder="Adresse actuelle...">
+                                    @error('current_address')
+                                        <p class="text-red-500 text-sm flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Adresse permanente -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                                        </svg>
+                                        Adresse Permanente
+                                    </label>
+                                    <input name="permanent_address" type="text"
+                                        value="{{ old('permanent_address') }}"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-4 focus:ring-rose-200 transition-all duration-300 font-medium"
+                                        placeholder="Adresse permanente...">
+                                    @error('permanent_address')
+                                        <p class="text-red-500 text-sm flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Classe -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-yellow-500" fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Classe Assignée
+                                    </label>
+                                    <select name="class_id"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-4 focus:ring-yellow-200 transition-all duration-300 font-medium">
+                                        <option value="">-- Sélectionner une classe --</option>
+                                        @foreach ($classes as $class)
+                                            <option value="{{ $class->id }}">{{ $class->class_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Parent -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-violet-500" fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Parent de l'Étudiant
+                                    </label>
+                                    <select name="parent_id"
+                                        class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-200 transition-all duration-300 font-medium">
+                                        <option value="">-- Sélectionner un parent --</option>
+                                        @foreach ($parents as $parent)
+                                            <option value="{{ $parent->id }}">{{ $parent->user->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bouton de soumission -->
+                        <div class="flex justify-center pt-8">
+                            <button type="submit"
+                                class="group relative inline-flex items-center px-16 py-5 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white font-bold text-xl rounded-2xl shadow-2xl hover:from-purple-700 hover:via-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-purple-200 transition-all duration-300 hover:scale-105 hover:shadow-3xl transform">
+                                <svg class="w-6 h-6 mr-4 transition-transform group-hover:scale-110" fill="currentColor"
+                                    viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Créer l'Étudiant
+                                <div
+                                    class="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                </div>
+                                <div
+                                    class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200">
+                                </div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <!-- Log on to codeastro.com for more projects -->
     </div>
 @endsection
 
 @push('scripts')
-<script>
-    $(function() {       
-        $( "#datepicker-sc" ).datepicker({ dateFormat: 'yy-mm-dd' });
-    })
-</script>
+    <script>
+        $(function() {
+            $("#datepicker-sc").datepicker({
+                dateFormat: 'yy-mm-dd'
+            });
+        })
+    </script>
 @endpush

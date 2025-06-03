@@ -1,97 +1,338 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="roles">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
 
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h2 class="text-gray-700 uppercase font-bold">Add New Subject</h2>
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            53%,
+            80%,
+            100% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            40%,
+            43% {
+                transform: translate3d(0, -8px, 0);
+            }
+
+            70% {
+                transform: translate3d(0, -4px, 0);
+            }
+
+            90% {
+                transform: translate3d(0, -2px, 0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .animate-bounce-slow {
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .glass {
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .gradient-border {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            padding: 3px;
+            border-radius: 1.5rem;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: calc(1.5rem - 3px);
+        }
+    </style>
+
+    <div class="min-h-screen bg-gradient-to-br from-cyan-100 via-blue-50 to-teal-100 py-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Header avec animation -->
+            <div class="flex items-center justify-between mb-8 animate-fadeIn">
+                <div class="relative">
+                    <h1
+                        class="text-5xl font-extrabold bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent mb-2">
+                        Nouvelle Matière
+                    </h1>
+                    <div class="absolute -bottom-2 left-0 w-32 h-1 bg-gradient-to-r from-cyan-600 to-teal-600 rounded-full">
+                    </div>
+                    <p class="mt-4 text-gray-600 font-medium">Créez une nouvelle matière académique avec tous les détails
+                        nécessaires</p>
+                </div>
+
+                <div class="animate-bounce-slow">
+                    <a href="{{ route('subject.index') }}"
+                        class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-gray-700 to-gray-800 text-white font-bold rounded-2xl shadow-xl hover:from-gray-800 hover:to-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                        <svg class="w-5 h-5 mr-3 transition-transform group-hover:-translate-x-1" fill="currentColor"
+                            viewBox="0 0 448 512">
+                            <path
+                                d="M134.059 296H436c6.627 0 12-5.373 12-12v-56c0-6.627-5.373-12-12-12H134.059v-46.059c0-21.382-25.851-32.09-40.971-16.971L7.029 239.029c-9.373 9.373-9.373 24.569 0 33.941l86.059 86.059c15.119 15.119 40.971 4.411 40.971-16.971V296z" />
+                        </svg>
+                        Retour aux Matières
+                        <div
+                            class="absolute inset-0 bg-white/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                    </a>
+                </div>
             </div>
-            <div class="flex flex-wrap items-center">
-                <a href="{{ route('subject.index') }}" class="bg-gray-700 text-white text-sm uppercase py-2 px-4 flex items-center rounded">
-                    <svg class="w-3 h-3 fill-current" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="long-arrow-alt-left" class="svg-inline--fa fa-long-arrow-alt-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M134.059 296H436c6.627 0 12-5.373 12-12v-56c0-6.627-5.373-12-12-12H134.059v-46.059c0-21.382-25.851-32.09-40.971-16.971L7.029 239.029c-9.373 9.373-9.373 24.569 0 33.941l86.059 86.059c15.119 15.119 40.971 4.411 40.971-16.971V296z"></path></svg>
-                    <span class="ml-2 text-xs font-semibold">Back</span>
-                </a>
-            </div>
-        </div>
-        <!-- Log on to codeastro.com for more projects -->
-        <div class="table w-full mt-8 bg-white rounded">
-            <form action="{{ route('subject.store') }}" method="POST" class="w-full max-w-xl px-6 py-12">
-                @csrf
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Subject Name
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="name" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" value="{{ old('name') }}">
-                        @error('name')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Subject Code
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="subject_code" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="number" value="{{ old('subject_code') }}">
-                        @error('subject_code')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <!-- Log on to codeastro.com for more projects -->
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Subject Description
-                        </label>
-                    </div>
-                    <div class="md:w-2/3">
-                        <input name="description" class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" value="{{ old('description') }}">
-                        @error('description')
-                            <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="md:flex md:items-center mb-6">
-                    <div class="md:w-1/3">
-                        <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                            Assign Teacher
-                        </label>
-                    </div>
-                    <div class="md:w-2/3 block text-gray-600 font-bold">
-                        <div class="relative">
-                            <select name="teacher_id" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-                                <option value="">--Select Teacher--</option>
-                                @foreach ($teachers as $teacher)
-                                    <option value="{{ $teacher->id }}">{{ $teacher->user->name }}</option>
-                                @endforeach
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+
+            <!-- Formulaire avec design moderne -->
+            <div class="gradient-border animate-slideIn">
+                <div class="form-container p-8">
+                    <form action="{{ route('subject.store') }}" method="POST" class="space-y-8">
+                        @csrf
+
+                        <!-- Icône de matière au centre -->
+                        <div class="text-center mb-8">
+                            <div
+                                class="w-20 h-20 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-2xl mx-auto flex items-center justify-center shadow-2xl">
+                                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path
+                                        d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 16c1.526 0 2.924-.39 4.5-.804zm7-4v10a7.969 7.969 0 01-4.5.804c-1.255 0-2.443-.29-3.5-.804V4.804A7.968 7.968 0 0114.5 4c1.526 0 2.924.39 4.5.804z" />
+                                </svg>
+                            </div>
+                            <h2 class="mt-4 text-2xl font-bold text-gray-800">Détails de la Matière</h2>
+                            <p class="text-gray-600">Remplissez les informations ci-dessous</p>
+                        </div>
+
+                        <!-- Section Informations de base -->
+                        <div class="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-2xl p-6 border border-cyan-200">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                <div
+                                    class="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                Informations de Base
+                            </h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- Nom de la matière -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 16c1.526 0 2.924-.39 4.5-.804zm7-4v10a7.969 7.969 0 01-4.5.804c-1.255 0-2.443-.29-3.5-.804V4.804A7.968 7.968 0 0114.5 4c1.526 0 2.924.39 4.5.804z" />
+                                        </svg>
+                                        Nom de la Matière
+                                    </label>
+                                    <input name="name" type="text" value="{{ old('name') }}"
+                                        class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:border-cyan-500 focus:ring-4 focus:ring-cyan-200 transition-all duration-300 font-medium text-lg"
+                                        placeholder="Ex: Mathématiques, Physique, Histoire...">
+                                    @error('name')
+                                        <p class="text-red-500 text-sm flex items-center mt-2">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Code de la matière -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Code de la Matière
+                                    </label>
+                                    <input name="subject_code" type="number" value="{{ old('subject_code') }}"
+                                        class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all duration-300 font-medium text-lg"
+                                        placeholder="Ex: 101, 205, 301...">
+                                    @error('subject_code')
+                                        <p class="text-red-500 text-sm flex items-center mt-2">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
-                        @error('teacher_id')
-                            <p class="text-red-500 text-xs font-normal italic">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
 
-                <div class="md:flex md:items-center">
-                    <div class="md:w-1/3"></div>
-                    <div class="md:w-2/3">
-                        <button class="shadow bg-blue-500 hover:bg-blue-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit">
-                            Submit
-                        </button>
+                        <!-- Section Description et Enseignant -->
+                        <div class="bg-gradient-to-r from-teal-50 to-green-50 rounded-2xl p-6 border border-teal-200">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                <div
+                                    class="w-8 h-8 bg-gradient-to-r from-teal-500 to-green-600 rounded-lg flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                Description et Attribution
+                            </h3>
+
+                            <div class="space-y-6">
+                                <!-- Description -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-teal-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Description de la Matière
+                                    </label>
+                                    <textarea name="description" rows="4"
+                                        class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:ring-4 focus:ring-teal-200 transition-all duration-300 font-medium resize-none"
+                                        placeholder="Décrivez brièvement le contenu et les objectifs de cette matière...">{{ old('description') }}</textarea>
+                                    @error('description')
+                                        <p class="text-red-500 text-sm flex items-center mt-2">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Enseignant assigné -->
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-bold text-gray-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Enseignant Assigné
+                                    </label>
+                                    <div class="relative">
+                                        <select name="teacher_id"
+                                            class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:border-green-500 focus:ring-4 focus:ring-green-200 transition-all duration-300 font-medium text-lg appearance-none cursor-pointer">
+                                            <option value="" class="text-gray-500">-- Sélectionner un enseignant --
+                                            </option>
+                                            @foreach ($teachers as $teacher)
+                                                <option value="{{ $teacher->id }}" class="text-gray-800">
+                                                    {{ $teacher->user->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    @error('teacher_id')
+                                        <p class="text-red-500 text-sm flex items-center mt-2">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bouton de soumission -->
+                        <div class="flex justify-center pt-8">
+                            <button type="submit"
+                                class="group relative inline-flex items-center px-16 py-5 bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 text-white font-bold text-xl rounded-2xl shadow-2xl hover:from-cyan-700 hover:via-blue-700 hover:to-teal-700 focus:outline-none focus:ring-4 focus:ring-cyan-200 transition-all duration-300 hover:scale-105 hover:shadow-3xl transform">
+                                <svg class="w-6 h-6 mr-4 transition-transform group-hover:scale-110" fill="currentColor"
+                                    viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Créer la Matière
+                                <div
+                                    class="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                </div>
+                                <div
+                                    class="absolute -inset-1 bg-gradient-to-r from-cyan-600 to-teal-600 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200">
+                                </div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Conseils -->
+            <div
+                class="mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200 animate-slideIn">
+                <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Conseils pour la création
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                    <div class="flex items-start space-x-2">
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p>Choisissez un nom clair et descriptif pour la matière</p>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                        <div class="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p>Utilisez un code numérique unique pour identifier la matière</p>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p>Rédigez une description détaillée des objectifs d'apprentissage</p>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                        <div class="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p>Assignez un enseignant qualifié pour cette matière</p>
                     </div>
                 </div>
-            </form>        
+            </div>
         </div>
-        <!-- Log on to codeastro.com for more projects -->
     </div>
 @endsection

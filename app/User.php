@@ -53,4 +53,34 @@ class User extends Authenticatable
     {
         return $this->hasOne(Parents::class);
     }
+
+    public function getPayments()
+    {
+        if ($this->hasRole('Parent') && $this->parent) {
+            return $this->parent->payments();
+        } elseif ($this->hasRole('Student') && $this->student) {
+            return $this->student->payments();
+        }
+        return collect([]);
+    }
+
+    public function getTotalPendingPayments()
+    {
+        if ($this->hasRole('Parent') && $this->parent) {
+            return $this->parent->getTotalPendingPayments();
+        } elseif ($this->hasRole('Student') && $this->student) {
+            return $this->student->getTotalPendingPayments();
+        }
+        return 0;
+    }
+
+    public function hasOverduePayments()
+    {
+        if ($this->hasRole('Parent') && $this->parent) {
+            return $this->parent->getOverduePaymentsCount() > 0;
+        } elseif ($this->hasRole('Student') && $this->student) {
+            return $this->student->getOverduePaymentsCount() > 0;
+        }
+        return false;
+    }
 }

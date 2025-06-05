@@ -48,6 +48,12 @@ Route::group(['middleware' => ['auth','role:Admin']], function ()
     Route::resource('student', 'StudentController');
     Route::get('attendance', 'AttendanceController@index')->name('attendance.index');
 
+    //ROUTES POUR LES PAIEMENTS
+    Route::resource('payments', 'PaymentController');
+    Route::patch('payments/{payment}/mark-as-paid', 'PaymentController@markAsPaid')->name('payments.mark-as-paid');
+    Route::get('payments-report', 'PaymentController@report')->name('payments.report');
+    Route::post('payments-bulk-create', 'PaymentController@bulkCreate')->name('payments.bulk-create');
+
 });
 
 Route::group(['middleware' => ['auth','role:Teacher']], function () 
@@ -59,8 +65,16 @@ Route::group(['middleware' => ['auth','role:Teacher']], function ()
 Route::group(['middleware' => ['auth','role:Parent']], function () 
 {
     Route::get('attendance/{attendance}', 'AttendanceController@show')->name('attendance.show');
+
+    Route::get('payments', 'PaymentController@index')->name('payments.index');
+    Route::get('payments/{payment}', 'PaymentController@show')->name('payments.show');
 });
 
 Route::group(['middleware' => ['auth','role:Student']], function () {
 
+});
+
+// ROUTES API POUR LES PAIEMENTS (accessible à tous les utilisateurs authentifiés)
+Route::group(['middleware' => 'auth', 'prefix' => 'api/payments'], function () {
+    Route::get('students-for-parent/{parentId}', 'PaymentController@getStudentsForParent');
 });

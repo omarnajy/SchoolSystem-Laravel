@@ -320,8 +320,7 @@
                                         <label
                                             class="flex items-center px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-pink-300 transition-colors cursor-pointer {{ $teacher->gender == 'female' ? 'border-pink-500 bg-pink-50' : '' }}">
                                             <input name="gender" type="radio" value="female"
-                                                {{ $teacher->gender == 'female' ? 'checked' : '' }}
-                                                class="sr-only peer">
+                                                {{ $teacher->gender == 'female' ? 'checked' : '' }} class="sr-only peer">
                                             <div
                                                 class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:bg-pink-500 peer-checked:border-pink-500 mr-3 {{ $teacher->gender == 'female' ? 'bg-pink-500 border-pink-500' : '' }}">
                                             </div>

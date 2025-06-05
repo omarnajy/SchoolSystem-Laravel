@@ -26,20 +26,6 @@
             <!-- Menu utilisateur avec style moderne -->
             <div class="flex items-center space-x-6">
                 @auth
-                    <!-- Notifications avec animation -->
-                    <div class="relative">
-                        <button
-                            class="relative p-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-300 group">
-                            <i class="fas fa-bell text-lg group-hover:animate-pulse"></i>
-                            <span
-                                class="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg animate-bounce">
-                                3
-                            </span>
-                            <!-- Effet de pulse pour les notifications non lues -->
-                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-400 rounded-full animate-ping opacity-75">
-                            </div>
-                        </button>
-                    </div>
 
                     <!-- Profil utilisateur avec dropdown moderne -->
                     <div class="relative">

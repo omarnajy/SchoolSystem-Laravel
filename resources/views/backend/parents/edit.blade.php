@@ -108,7 +108,7 @@
                                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                                     </path>
                                 </svg>
-                                Photo de profil actuelle
+                                Photo de profil
                             </h3>
 
                             <div class="flex items-center space-x-6">
@@ -161,6 +161,36 @@
                                     <div class="relative">
                                         <input type="text" name="name" id="name"
                                             value="{{ $parent->user->name }}" placeholder="Nom et prénom du parent"
+                                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white @error('name') border-red-300 bg-red-50 @enderror">
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    @error('name')
+                                        <p class="mt-2 text-sm text-red-600 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- Email Field -->
+                                <div class="group">
+                                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-3">
+                                        Adresse Email *
+                                    </label>
+                                    <div class="relative">
+                                        <input type="email" name="email" id="email"
+                                            value="{{ $parent->user->email }}" placeholder="parent@exemple.com"
                                             class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white @error('email') border-red-300 bg-red-50 @enderror">
                                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
                                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
@@ -212,6 +242,39 @@
                                         </p>
                                     @enderror
                                 </div>
+
+                                <!-- Password Field -->
+                                <div class="group">
+                                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-3">
+                                        Nouveau mot de passe (optionnel)
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" name="password" id="password"
+                                            placeholder="Nouveau mot de passe"
+                                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white @error('password') border-red-300 bg-red-50 @enderror">
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    @error('password')
+                                        <p class="mt-2 text-sm text-red-600 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Laissez vide pour conserver le mot de passe actuel
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -220,7 +283,7 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
                                 Genre
                             </label>
-                            <div class="grid grid-cols-3 gap-4">
+                            <div class="grid grid-cols-2 gap-4">
                                 <label
                                     class="flex items-center p-4 border-2 rounded-xl cursor-pointer hover:border-orange-300 transition-all duration-200 group
                                 {{ $parent->gender === 'male' ? 'border-orange-500 bg-orange-50' : 'border-gray-200' }}">
@@ -255,23 +318,7 @@
                                             class="text-sm font-medium text-gray-700 group-hover:text-orange-700">Femme</span>
                                     </div>
                                 </label>
-                                <label
-                                    class="flex items-center p-4 border-2 rounded-xl cursor-pointer hover:border-orange-300 transition-all duration-200 group
-                                {{ $parent->gender === 'other' ? 'border-orange-500 bg-orange-50' : 'border-gray-200' }}">
-                                    <input type="radio" name="gender" value="other"
-                                        {{ $parent->gender === 'other' ? 'checked' : '' }}
-                                        class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300">
-                                    <div class="ml-3 flex items-center">
-                                        <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                                            </path>
-                                        </svg>
-                                        <span
-                                            class="text-sm font-medium text-gray-700 group-hover:text-orange-700">Autre</span>
-                                    </div>
-                                </label>
+
                             </div>
                             @error('gender')
                                 <p class="mt-2 text-sm text-red-600 flex items-center">
@@ -364,7 +411,7 @@
                             <!-- Copy Address Button -->
                             <div class="mt-4">
                                 <button type="button" onclick="copyAddress()"
-                                    class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors">
+                                    class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
@@ -449,6 +496,7 @@
                             <li>• La modification de l'email peut affecter la connexion du parent</li>
                             <li>• Les enfants associés ne seront pas affectés par ces modifications</li>
                             <li>• Laissez le champ photo vide pour conserver l'image actuelle</li>
+                            <li>• Laissez le champ mot de passe vide pour ne pas le modifier</li>
                             <li>• Les modifications prendront effet immédiatement</li>
                         </ul>
                     </div>
@@ -461,48 +509,103 @@
         function copyAddress() {
             const currentAddress = document.getElementById('current_address').value;
             document.getElementById('permanent_address').value = currentAddress;
+
+            // Animation visuelle pour confirmer l'action
+            const button = event.target.closest('button');
+            const originalHTML = button.innerHTML;
+
+            // Changement visuel temporaire
+            button.innerHTML = `
+                <svg class="w-3 h-3 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Adresse copiée !
+            `;
+            button.classList.remove('bg-orange-100', 'text-orange-700', 'hover:bg-orange-200');
+            button.classList.add('bg-green-100', 'text-green-700', 'cursor-default');
+            button.disabled = true;
+
+            // Retour à l'état initial après 2 secondes
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                button.classList.remove('bg-green-100', 'text-green-700', 'cursor-default');
+                button.classList.add('bg-orange-100', 'text-orange-700', 'hover:bg-orange-200');
+                button.disabled = false;
+            }, 2000);
         }
 
         // Preview image upload
         document.querySelector('input[name="profile_picture"]').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                // Vérifier la taille du fichier (2MB max)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('La taille du fichier ne doit pas dépasser 2MB');
+                    this.value = '';
+                    return;
+                }
+
+                // Vérifier le type de fichier
+                if (!file.type.startsWith('image/')) {
+                    alert('Veuillez sélectionner un fichier image valide');
+                    this.value = '';
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    console.log('New image selected:', file.name);
+                    // Créer une prévisualisation de l'image
+                    const preview = document.querySelector('.h-24.w-24');
+                    if (preview) {
+                        preview.innerHTML =
+                            `<img class="h-24 w-24 rounded-xl object-cover" src="${e.target.result}" alt="Prévisualisation">`;
+                    }
                 };
                 reader.readAsDataURL(file);
             }
         });
-    </script>
-    @endsection200 bg-gray-50 focus:bg-white @error('name')
-        border-red-300 bg-red-50
-    @enderror"
-    >
-    <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-        </svg>
-    </div>
-    </div>
-    @error('name')
-        <p class="mt-2 text-sm text-red-600 flex items-center">
-            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                    clip-rule="evenodd"></path>
-            </svg>
-            {{ $message }}
-        </p>
-    @enderror
-    </div>
 
-    <!-- Email Field -->
-    <div class="group">
-        <label for="email" class="block text-sm font-semibold text-gray-700 mb-3">
-            Adresse Email *
-        </label>
-        <div class="relative">
-            <input type="email" name="email" id="email" value="{{ $parent->user->email }}" placeholder="parent@exemple.com"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-
+        // Validation du formulaire côté client
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            if (!name) {
+                e.preventDefault();
+                alert('Le nom est requis');
+                document.getElementById('name').focus();
+                return;
+            }
+
+            if (!email) {
+                e.preventDefault();
+                alert('L\'email est requis');
+                document.getElementById('email').focus();
+                return;
+            }
+
+            // Validation basique de l'email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                alert('Veuillez saisir un email valide');
+                document.getElementById('email').focus();
+                return;
+            }
+        });
+
+        // Animation d'entrée pour les éléments du formulaire
+        document.addEventListener('DOMContentLoaded', function() {
+            const formSections = document.querySelectorAll('.space-y-8 > div');
+            formSections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    section.style.transition = 'all 0.5s ease';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+@endsection

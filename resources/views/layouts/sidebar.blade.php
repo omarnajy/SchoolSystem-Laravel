@@ -73,22 +73,6 @@
                             </a>
                         </div>
 
-                        <!-- NOUVEAU : Paiements -->
-                        <div class="sidebar-item">
-                            <a href="{{ route('payments.index') }}"
-                                class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('payments.*') ? 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-100 hover:text-yellow-700' }}">
-                                <div
-                                    class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('payments.*') ? 'bg-white/20' : 'bg-yellow-100 group-hover:bg-yellow-200' }} transition-all duration-300">
-                                    <i
-                                        class="fas fa-euro-sign {{ request()->routeIs('payments.*') ? 'text-white' : 'text-yellow-600' }}"></i>
-                                </div>
-                                <span class="font-medium">Paiements</span>
-                                @if (request()->routeIs('payments.*'))
-                                    <div class="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                                @endif
-                            </a>
-                        </div>
-
                         <!-- Parents -->
                         <div class="sidebar-item">
                             <a href="{{ route('parents.index') }}"
@@ -267,7 +251,6 @@
                                 @endif
                             </a>
                         </div>
-
                         <!-- Présences -->
                         <div class="sidebar-item">
                             <a href="{{ route('attendance.index') }}"

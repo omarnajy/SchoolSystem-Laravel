@@ -48,6 +48,13 @@ Route::group(['middleware' => ['auth','role:Admin']], function ()
     Route::resource('student', 'StudentController');
     Route::get('attendance', 'AttendanceController@index')->name('attendance.index');
 
+    // Routes pour la gestion des paiements
+    Route::resource('payments', 'PaymentController');
+    Route::post('payments/{payment}/mark-paid', 'PaymentController@markAsPaid')->name('payments.mark-paid');
+    Route::get('payments-bulk-create', 'PaymentController@bulkCreate')->name('payments.bulk-create');
+    Route::post('payments-bulk-store', 'PaymentController@bulkStore')->name('payments.bulk-store');
+    Route::get('payments-update-overdue', 'PaymentController@updateOverduePayments')->name('payments.update-overdue');
+
 });
 
 Route::group(['middleware' => ['auth','role:Teacher']], function () 

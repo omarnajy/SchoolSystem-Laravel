@@ -138,4 +138,56 @@ class Payment extends Model
         
         return 'INV-' . $year . '-' . str_pad($number, 4, '0', STR_PAD_LEFT);
     }
+
+     // Méthodes pour les statistiques
+    public static function getTotalAmountByStatus($parentId = null, $status = 'paid')
+    {
+        $query = self::where('status', $status);
+        
+        if ($parentId) {
+            $query->where('parent_id', $parentId);
+        }
+        
+        return $query->sum('amount');
+    }
+
+    public static function getCountByStatus($parentId = null, $status = 'paid')
+    {
+        $query = self::where('status', $status);
+        
+        if ($parentId) {
+            $query->where('parent_id', $parentId);
+        }
+        
+        return $query->count();
+    }
+
+    // Méthode pour obtenir les paiements d'un parent avec filtres
+    public static function getParentPayments($parentId, $filters = [])
+    {
+        $query = self::with(['student.user'])
+                    ->where('parent_id', $parentId);
+
+        if (isset($filters['status']) && $filters['status']) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (isset($filters['academic_year']) && $filters['academic_year']) {
+            $query->where('academic_year', $filters['academic_year']);
+        }
+
+        if (isset($filters['payment_type']) && $filters['payment_type']) {
+            $query->where('payment_type', $filters['payment_type']);
+        }
+
+        if (isset($filters['search']) && $filters['search']) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhere('period', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->latest();
+    }
 }

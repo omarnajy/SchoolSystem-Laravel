@@ -321,7 +321,7 @@
                                     </label>
                                     <div class="flex flex-wrap gap-4">
                                         <label
-                                            class="flex items-center px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-300 transition-colors cursor-pointer group">
+                                            class="flex items-center px-8 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-300 transition-colors cursor-pointer group">
                                             <input name="gender" type="radio" value="male" class="sr-only peer">
                                             <div
                                                 class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:bg-blue-500 peer-checked:border-blue-500 mr-3 group-hover:border-blue-400">
@@ -329,21 +329,12 @@
                                             <span class="font-medium text-gray-700 group-hover:text-blue-700">Homme</span>
                                         </label>
                                         <label
-                                            class="flex items-center px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-pink-300 transition-colors cursor-pointer group">
+                                            class="flex items-center px-8 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-pink-300 transition-colors cursor-pointer group">
                                             <input name="gender" type="radio" value="female" class="sr-only peer">
                                             <div
                                                 class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:bg-pink-500 peer-checked:border-pink-500 mr-3 group-hover:border-pink-400">
                                             </div>
                                             <span class="font-medium text-gray-700 group-hover:text-pink-700">Femme</span>
-                                        </label>
-                                        <label
-                                            class="flex items-center px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-colors cursor-pointer group">
-                                            <input name="gender" type="radio" value="other" class="sr-only peer">
-                                            <div
-                                                class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:bg-purple-500 peer-checked:border-purple-500 mr-3 group-hover:border-purple-400">
-                                            </div>
-                                            <span
-                                                class="font-medium text-gray-700 group-hover:text-purple-700">Autre</span>
                                         </label>
                                     </div>
                                     @error('gender')

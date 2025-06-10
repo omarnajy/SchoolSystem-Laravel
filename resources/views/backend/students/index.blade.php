@@ -71,6 +71,53 @@
         .hover-scale:hover {
             transform: scale(1.02);
         }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+        }
+
+        .animate-slideDown {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .animate-slideUp {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .progress-bar {
+            width: 0%;
+            transition: width 0.3s ease;
+        }
     </style>
 
     <div class="min-h-screen bg-gradient-to-br from-emerald-100 via-blue-50 to-purple-100 py-8">
@@ -89,7 +136,7 @@
                     <p class="mt-4 text-gray-600 font-medium">Gérez tous les étudiants de votre établissement</p>
                 </div>
 
-                <div class="animate-bounceIn">
+                <div class="animate-bounceIn space-x-4">
                     <a href="{{ route('student.create') }}"
                         class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-2xl shadow-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
                         <svg class="w-5 h-5 mr-3 transition-transform group-hover:rotate-90" fill="currentColor"
@@ -103,6 +150,19 @@
                             class="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         </div>
                     </a>
+                    <button id="openBulkImport"
+                        class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-2xl shadow-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                        <svg class="w-5 h-5 mr-3 transition-transform group-hover:scale-110" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Import en Lot
+                        <div
+                            class="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                    </button>
                 </div>
             </div>
 
@@ -434,10 +494,625 @@
     </div>
 
     @include('backend.modals.delete', ['name' => 'student'])
+
+    <!-- Modal d'import en lot -->
+    <div id="bulkImportModal"
+        class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slideDown">
+            <!-- Header du modal -->
+            <div class="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 px-8 py-6 rounded-t-3xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">Import en Lot d'Étudiants</h3>
+                            <p class="text-blue-100 font-medium">Importez plusieurs étudiants depuis un fichier Excel ou
+                                CSV</p>
+                        </div>
+                    </div>
+                    <button id="closeBulkImport" class="p-2 hover:bg-white/20 rounded-xl transition-colors">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corps du modal -->
+            <div class="p-8">
+                <!-- Étapes du processus -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between">
+                        <div id="step1" class="flex items-center step active">
+                            <div
+                                class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center font-bold mr-3">
+                                1</div>
+                            <span class="font-semibold text-gray-700">Télécharger le modèle</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200 mx-4 rounded-full">
+                            <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full step1-progress"
+                                style="width: 0%"></div>
+                        </div>
+                        <div id="step2" class="flex items-center step">
+                            <div
+                                class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold mr-3">
+                                2</div>
+                            <span class="font-semibold text-gray-500">Importer le fichier</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200 mx-4 rounded-full">
+                            <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full step2-progress"
+                                style="width: 0%"></div>
+                        </div>
+                        <div id="step3" class="flex items-center step">
+                            <div
+                                class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold mr-3">
+                                3</div>
+                            <span class="font-semibold text-gray-500">Validation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu principal -->
+                <div class="space-y-6">
+                    <!-- Section 1: Télécharger le modèle -->
+                    <div id="downloadSection"
+                        class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            Étape 1: Télécharger le modèle de fichier
+                        </h4>
+                        <p class="text-gray-600 mb-4">Téléchargez le modèle Excel avec les colonnes requises et
+                            remplissez-le avec les données des étudiants.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-white rounded-xl p-4 border border-blue-200">
+                                <h5 class="font-bold text-gray-800 mb-2">Colonnes requises :</h5>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>nom (obligatoire)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>email (obligatoire)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>mot_de_passe (obligatoire)
+                                    </li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>numero_matricule</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>telephone</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 border border-blue-200">
+                                <h5 class="font-bold text-gray-800 mb-2">Colonnes optionnelles :</h5>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>genre (male/female)
+                                    </li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>date_naissance
+                                        (AAAA-MM-JJ)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>adresse_actuelle</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>adresse_permanente</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>nom_classe</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-4">
+                            <a href="{{ route('students.download-template', 'excel') }}"
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Télécharger Modèle Excel
+                            </a>
+                            <a href="{{ route('students.download-template', 'csv') }}"
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Télécharger Modèle CSV
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Zone d'upload -->
+                    <div id="uploadSection"
+                        class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            Étape 2: Importer votre fichier
+                        </h4>
+
+                        <form id="importForm" action="{{ route('students.bulk-import') }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <div class="file-upload-area bg-white rounded-xl p-8 text-center border-2 border-dashed border-gray-300 hover:border-purple-400 transition-all duration-300 cursor-pointer"
+                                id="fileDropArea">
+                                <div id="uploadContent">
+                                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none"
+                                        stroke="currentColor" viewBox="0 0 48 48">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
+                                    </svg>
+                                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Glissez-déposez votre fichier ici
+                                    </h3>
+                                    <p class="text-gray-500 mb-4">ou cliquez pour sélectionner un fichier</p>
+                                    <p class="text-sm text-gray-400">Formats acceptés: .xlsx, .xls, .csv (max 10MB)</p>
+                                </div>
+                                <input type="file" id="fileInput" name="import_file" accept=".xlsx,.xls,.csv"
+                                    class="hidden">
+                            </div>
+
+                            <!-- Informations du fichier sélectionné -->
+                            <div id="fileInfo" class="hidden mt-4 bg-white rounded-xl p-4 border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p id="fileName" class="font-semibold text-gray-800"></p>
+                                            <p id="fileSize" class="text-sm text-gray-500"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="removeFile"
+                                        class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Barre de progression -->
+                            <div id="progressSection" class="hidden mt-4">
+                                <div class="bg-gray-200 rounded-full h-3 mb-2">
+                                    <div id="progressBar"
+                                        class="bg-gradient-to-r from-purple-500 to-blue-600 h-3 rounded-full progress-bar">
+                                    </div>
+                                </div>
+                                <p id="progressText" class="text-sm text-gray-600 text-center">Importation en cours...</p>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="flex justify-end space-x-4 mt-6">
+                                <button type="button" id="cancelImport"
+                                    class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                                    Annuler
+                                </button>
+                                <button type="submit" id="startImport" disabled
+                                    class="px-8 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                                    <svg class="w-5 h-5 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    Commencer l'Import
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Section 3: Résultats -->
+                    <div id="resultsSection"
+                        class="hidden bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            Résultat de l'importation
+                        </h4>
+                        <div id="importResults" class="space-y-4">
+                            <!-- Les résultats seront affichés ici -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer du modal -->
+            <div class="bg-gray-50 px-8 py-4 rounded-b-3xl border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm text-gray-500">
+                        <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Assurez-vous que votre fichier respecte le format du modèle téléchargé
+                    </p>
+                    <button id="closeModalFooter" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
     <script>
+        // Variables globales
+        let selectedFile = null;
+
+        // Éléments DOM
+        const modal = document.getElementById('bulkImportModal');
+        const openBtn = document.getElementById('openBulkImport');
+        const closeBtns = [document.getElementById('closeBulkImport'), document.getElementById('closeModalFooter')];
+        const fileDropArea = document.getElementById('fileDropArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeFileBtn = document.getElementById('removeFile');
+        const startImportBtn = document.getElementById('startImport');
+        const cancelImportBtn = document.getElementById('cancelImport');
+        const progressSection = document.getElementById('progressSection');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const resultsSection = document.getElementById('resultsSection');
+        const importResults = document.getElementById('importResults');
+
+        // Ouvrir le modal
+        openBtn.addEventListener('click', function() {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Fermer le modal
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', closeModal);
+        });
+
+        cancelImportBtn.addEventListener('click', closeModal);
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            resetForm();
+        }
+
+        // Fermer en cliquant en dehors
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Gestion du drag & drop
+        fileDropArea.addEventListener('click', () => fileInput.click());
+
+        fileDropArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        fileDropArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        fileDropArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        // Gérer la sélection de fichier
+        function handleFileSelect(file) {
+            // Vérifier le type de fichier
+            const allowedTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+                'text/csv'
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert('Type de fichier non supporté. Veuillez sélectionner un fichier Excel (.xlsx, .xls) ou CSV.');
+                return;
+            }
+
+            // Vérifier la taille (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Le fichier est trop volumineux. Taille maximale: 10MB');
+                return;
+            }
+
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+
+            fileInfo.classList.remove('hidden');
+            startImportBtn.disabled = false;
+
+            // Mettre à jour les étapes
+            updateStep(1, true);
+        }
+
+        // Supprimer le fichier sélectionné
+        removeFileBtn.addEventListener('click', function() {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.add('hidden');
+            startImportBtn.disabled = true;
+            updateStep(1, false);
+        });
+
+        // Formater la taille du fichier
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Mettre à jour les étapes
+        function updateStep(stepNumber, completed) {
+            const steps = document.querySelectorAll('.step');
+            const progressBars = document.querySelectorAll('[class*="step"][class*="-progress"]');
+
+            steps.forEach((step, index) => {
+                const stepNum = index + 1;
+                const circle = step.querySelector('div');
+                const text = step.querySelector('span');
+
+                if (stepNum <= stepNumber && completed) {
+                    circle.className =
+                        'w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center font-bold mr-3';
+                    text.className = 'font-semibold text-gray-700';
+
+                    if (stepNum < stepNumber) {
+                        circle.innerHTML =
+                            `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>`;
+                    }
+                } else if (stepNum > stepNumber || !completed) {
+                    circle.className =
+                        'w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold mr-3';
+                    text.className = 'font-semibold text-gray-500';
+                    circle.textContent = stepNum;
+                }
+            });
+
+            // Mettre à jour les barres de progression
+            progressBars.forEach((bar, index) => {
+                const stepNum = index + 1;
+                if (stepNum < stepNumber && completed) {
+                    bar.style.width = '100%';
+                } else {
+                    bar.style.width = '0%';
+                }
+            });
+        }
+
+        // Gérer la soumission du formulaire
+        document.getElementById('importForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!selectedFile) return;
+
+            startImport();
+        });
+
+        // Démarrer l'importation
+        function startImport() {
+            updateStep(2, true);
+            progressSection.classList.remove('hidden');
+            startImportBtn.disabled = true;
+
+            // Faire l'appel AJAX réel
+            const formData = new FormData();
+            formData.append('import_file', selectedFile);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+            $.ajax({
+                url: '{{ route('students.bulk-import') }}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                xhr: function() {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function(evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total * 100;
+                            progressBar.style.width = percentComplete + '%';
+                            progressText.textContent =
+                                `Importation en cours... ${Math.round(percentComplete)}%`;
+                        }
+                    }, false);
+                    return xhr;
+                },
+                success: function(response) {
+                    completeImport(response);
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Erreur lors de l\'importation';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    alert(errorMessage);
+                    resetForm();
+                }
+            });
+        }
+
+
+        // Finaliser l'importation
+        function completeImport(response) {
+            updateStep(3, true);
+            progressSection.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+
+            // Utiliser les vraies données de la réponse serveur
+            showImportResults(response);
+        }
+
+        // Afficher les résultats d'importation
+        function showImportResults(results) {
+            // S'assurer que les données sont correctes
+            const successCount = results.success || 0;
+            const errorCount = results.errors || 0;
+            const totalCount = results.total || 0;
+            const errorDetails = results.errorDetails || [];
+
+            const resultsHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-4 border border-green-200">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-green-600">${successCount}</p>
+                        <p class="text-sm text-gray-600">Importés avec succès</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 border border-red-200">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-red-600">${errorCount}</p>
+                        <p class="text-sm text-gray-600">Erreurs</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 border border-blue-200">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-blue-600">${totalCount}</p>
+                        <p class="text-sm text-gray-600">Total traité</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        ${errorCount > 0 && errorDetails.length > 0 ? `
+                                    <div class="bg-white rounded-xl p-4 border border-red-200">
+                                        <h5 class="font-bold text-red-600 mb-3 flex items-center">
+                                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            </svg>
+                                            Détail des erreurs
+                                        </h5>
+                                        <div class="space-y-2">
+                                            ${errorDetails.map(error => `
+                    <div class="flex items-start p-3 bg-red-50 rounded-lg">
+                        <span class="inline-flex items-center px-2 py-1 bg-red-200 text-red-800 text-xs font-bold rounded-full mr-3">
+                            Ligne ${error.ligne || error.row || 'N/A'}
+                        </span>
+                        <span class="text-sm text-red-700">${error.erreur || error.message || error}</span>
+                    </div>
+                `).join('')}
+                                        </div>
+                                    </div>
+                                    ` : ''}
+
+        <div class="flex justify-end space-x-4 mt-6">
+            <button onclick="closeModal()" class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                Fermer
+            </button>
+            <button onclick="window.location.reload()" class="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105">
+                <svg class="w-5 h-5 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                </svg>
+                Actualiser la page
+            </button>
+        </div>
+    `;
+
+            importResults.innerHTML = resultsHTML;
+        }
+
+        // Réinitialiser le formulaire
+        function resetForm() {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.add('hidden');
+            progressSection.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            startImportBtn.disabled = true;
+
+            // Réinitialiser les étapes
+            updateStep(1, false);
+
+            // Réinitialiser les classes des étapes
+            document.getElementById('step1').querySelector('div').textContent = '1';
+            document.getElementById('step2').querySelector('div').textContent = '2';
+            document.getElementById('step3').querySelector('div').textContent = '3';
+        }
+
+        // Télécharger les modèles (à implémenter côté serveur)
+        document.getElementById('downloadTemplate').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Ici vous pouvez ajouter la logique pour télécharger le modèle Excel
+            // window.location.href = '/download-template/excel';
+            alert('Fonctionnalité de téléchargement à implémenter côté serveur');
+        });
+
+        document.getElementById('downloadCSVTemplate').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Ici vous pouvez ajouter la logique pour télécharger le modèle CSV
+            // window.location.href = '/download-template/csv';
+            alert('Fonctionnalité de téléchargement à implémenter côté serveur');
+        });
+
         // Fonction pour ouvrir le modal de suppression
         function deleteStudent(url) {
             const modal = document.getElementById('deleteModal');

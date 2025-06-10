@@ -22,15 +22,27 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('parents.create') }}"
-                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
-                            </path>
-                        </svg>
-                        Nouveau parent
-                    </a>
+                    <div class="flex items-center space-x-3">
+                        <a href="{{ route('parents.create') }}"
+                            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
+                                </path>
+                            </svg>
+                            Nouveau parent
+                        </a>
+
+                        <button id="openParentBulkImport"
+                            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10">
+                                </path>
+                            </svg>
+                            Import en Lot
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -84,7 +96,8 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Avec téléphone</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $parents->whereNotNull('phone')->count() }}</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $parents->whereNotNull('phone')->count() }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -101,7 +114,8 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Comptes actifs</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $parents->whereNotNull('email')->count() }}</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $parents->whereNotNull('email')->count() }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -183,7 +197,8 @@
                                                 @endif
                                             </div>
                                             <div>
-                                                <div class="text-sm font-semibold text-gray-900">{{ $parent->user->name }}
+                                                <div class="text-sm font-semibold text-gray-900">
+                                                    {{ $parent->user->name }}
                                                 </div>
                                                 <div class="text-xs text-gray-500 flex items-center mt-1">
                                                     @if ($parent->gender)
@@ -272,7 +287,8 @@
                                                     <svg class="h-4 w-4 group-hover:scale-110 transition-transform"
                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                            stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                                                        </path>
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
                                                             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
@@ -319,7 +335,8 @@
                                                 </path>
                                             </svg>
                                             <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun parent trouvé</h3>
-                                            <p class="text-gray-500 mb-4">Commencez par ajouter votre premier parent.</p>
+                                            <p class="text-gray-500 mb-4">Commencez par ajouter votre premier parent.
+                                            </p>
                                             <a href="{{ route('parents.create') }}"
                                                 class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
@@ -365,7 +382,8 @@
                     <div class="ml-4">
                         <h3 class="text-sm font-semibold text-blue-800">Guide de gestion des parents</h3>
                         <ul class="mt-2 text-sm text-blue-700 space-y-1">
-                            <li>• <strong>Voir détails :</strong> Cliquez sur l'icône œil pour afficher plus d'informations
+                            <li>• <strong>Voir détails :</strong> Cliquez sur l'icône œil pour afficher plus
+                                d'informations
                             </li>
                             <li>• <strong>Modifier :</strong> Cliquez sur l'icône crayon pour éditer les informations du
                                 parent</li>
@@ -379,7 +397,277 @@
             </div>
         </div>
     </div>
+    <!-- Modal d'import en lot pour parents -->
+    <div id="parentBulkImportModal"
+        class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slideDown">
+            <!-- Header du modal -->
+            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-8 py-6 rounded-t-3xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10">
+                                </path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">Import en Lot de Parents</h3>
+                            <p class="text-blue-100 font-medium">Importez plusieurs parents depuis un fichier Excel ou CSV
+                            </p>
+                        </div>
+                    </div>
+                    <button id="closeParentBulkImport" class="p-2 hover:bg-white/20 rounded-xl transition-colors">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
 
+            <!-- Corps du modal -->
+            <div class="p-8">
+                <!-- Étapes du processus -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between">
+                        <div id="parentStep1" class="flex items-center step active">
+                            <div
+                                class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center font-bold mr-3">
+                                1</div>
+                            <span class="font-semibold text-gray-700">Télécharger le modèle</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200 mx-4 rounded-full">
+                            <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full parentStep1-progress"
+                                style="width: 0%"></div>
+                        </div>
+                        <div id="parentStep2" class="flex items-center step">
+                            <div
+                                class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold mr-3">
+                                2</div>
+                            <span class="font-semibold text-gray-500">Importer le fichier</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200 mx-4 rounded-full">
+                            <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full parentStep2-progress"
+                                style="width: 0%"></div>
+                        </div>
+                        <div id="parentStep3" class="flex items-center step">
+                            <div
+                                class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold mr-3">
+                                3</div>
+                            <span class="font-semibold text-gray-500">Validation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu principal -->
+                <div class="space-y-6">
+                    <!-- Section 1: Télécharger le modèle -->
+                    <div id="parentDownloadSection"
+                        class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-blue-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            Étape 1: Télécharger le modèle de fichier
+                        </h4>
+                        <p class="text-gray-600 mb-4">Téléchargez le modèle Excel avec les colonnes requises et
+                            remplissez-le avec les données des parents.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-white rounded-xl p-4 border border-blue-200">
+                                <h5 class="font-bold text-gray-800 mb-2">Colonnes obligatoires :</h5>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>nom (obligatoire)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>email (obligatoire)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>mot_de_passe (min 6
+                                        caractères)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>genre (male/female)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>telephone</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 border border-blue-200">
+                                <h5 class="font-bold text-gray-800 mb-2">Colonnes obligatoires (suite) :</h5>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>adresse_actuelle</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>adresse_permanente</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>profession (optionnel)
+                                    </li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>contact_urgence
+                                        (optionnel)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-4">
+                            <a href="{{ route('parents.download-template', 'excel') }}"
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                Télécharger Modèle Excel
+                            </a>
+                            <a href="{{ route('parents.download-template', 'csv') }}"
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                Télécharger Modèle CSV
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Zone d'upload -->
+                    <div id="parentUploadSection"
+                        class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-purple-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10">
+                                </path>
+                            </svg>
+                            Étape 2: Importer votre fichier
+                        </h4>
+
+                        <form id="parentImportForm" action="{{ route('parents.bulk-import') }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <div class="file-upload-area bg-white rounded-xl p-8 text-center border-2 border-dashed border-gray-300 hover:border-purple-400 transition-all duration-300 cursor-pointer"
+                                id="parentFileDropArea">
+                                <div id="parentUploadContent">
+                                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none"
+                                        stroke="currentColor" viewBox="0 0 48 48">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
+                                    </svg>
+                                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Glissez-déposez votre fichier ici
+                                    </h3>
+                                    <p class="text-gray-500 mb-4">ou cliquez pour sélectionner un fichier</p>
+                                    <p class="text-sm text-gray-400">Formats acceptés: .xlsx, .xls, .csv (max 10MB)</p>
+                                </div>
+                                <input type="file" id="parentFileInput" name="import_file" accept=".xlsx,.xls,.csv"
+                                    class="hidden">
+                            </div>
+
+                            <!-- Informations du fichier sélectionné -->
+                            <div id="parentFileInfo" class="hidden mt-4 bg-white rounded-xl p-4 border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p id="parentFileName" class="font-semibold text-gray-800"></p>
+                                            <p id="parentFileSize" class="text-sm text-gray-500"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="parentRemoveFile"
+                                        class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Barre de progression -->
+                            <div id="parentProgressSection" class="hidden mt-4">
+                                <div class="bg-gray-200 rounded-full h-3 mb-2">
+                                    <div id="parentProgressBar"
+                                        class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full progress-bar">
+                                    </div>
+                                </div>
+                                <p id="parentProgressText" class="text-sm text-gray-600 text-center">Importation en
+                                    cours...</p>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="flex justify-end space-x-4 mt-6">
+                                <button type="button" id="parentCancelImport"
+                                    class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                                    Annuler
+                                </button>
+                                <button type="submit" id="parentStartImport" disabled
+                                    class="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                                    <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10">
+                                        </path>
+                                    </svg>
+                                    Commencer l'Import
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Section 3: Résultats -->
+                    <div id="parentResultsSection"
+                        class="hidden bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-green-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                                </path>
+                            </svg>
+                            Résultat de l'importation
+                        </h4>
+                        <div id="parentImportResults" class="space-y-4">
+                            <!-- Les résultats seront affichés ici -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer du modal -->
+            <div class="bg-gray-50 px-8 py-4 rounded-b-3xl border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm text-gray-500">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+                        Assurez-vous que les emails des parents sont uniques
+                    </p>
+                    <button id="parentCloseModalFooter" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Include Delete Modal -->
     @include('backend.modals.delete', ['name' => 'parent'])
 
@@ -409,6 +697,37 @@
             background-color: #3b82f6;
             border-color: #3b82f6;
             color: white;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .animate-slideDown {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .progress-bar {
+            width: 0%;
+            transition: width 0.3s ease;
         }
     </style>
 

@@ -192,7 +192,7 @@
                             </label>
                             <div class="grid grid-cols-3 gap-4">
                                 <label
-                                    class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-emerald-300 transition-all duration-200 group">
+                                    class="flex items-center p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-emerald-300 transition-all duration-200 group">
                                     <input type="radio" name="gender" value="male"
                                         class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300">
                                     <div class="ml-3 flex items-center">
@@ -207,7 +207,7 @@
                                     </div>
                                 </label>
                                 <label
-                                    class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-emerald-300 transition-all duration-200 group">
+                                    class="flex items-center p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-emerald-300 transition-all duration-200 group">
                                     <input type="radio" name="gender" value="female"
                                         class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300">
                                     <div class="ml-3 flex items-center">
@@ -219,21 +219,6 @@
                                         </svg>
                                         <span
                                             class="text-sm font-medium text-gray-700 group-hover:text-emerald-700">Femme</span>
-                                    </div>
-                                </label>
-                                <label
-                                    class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-emerald-300 transition-all duration-200 group">
-                                    <input type="radio" name="gender" value="other"
-                                        class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300">
-                                    <div class="ml-3 flex items-center">
-                                        <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                                            </path>
-                                        </svg>
-                                        <span
-                                            class="text-sm font-medium text-gray-700 group-hover:text-emerald-700">Autre</span>
                                     </div>
                                 </label>
                             </div>

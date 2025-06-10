@@ -7,11 +7,12 @@ use App\Parents;
 use App\Student;
 use App\Teacher;
 use App\Subject;
+use App\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class HomeController extends Controller
 {
@@ -52,9 +53,63 @@ class HomeController extends Controller
 
         } elseif ($user->hasRole('Parent')) {
             
-            $parents = Parents::with(['children'])->withCount('children')->findOrFail($user->parent->id); 
+            $parent = Parents::with(['children.user', 'children.class'])->findOrFail($user->parent->id);
+            
+            // Préparer les données pour la vue
+            $children = $parent->children->map(function ($child) {
+                return (object) [
+                    'id' => $child->id,
+                    'name' => $child->user->name,
+                    'email' => $child->user->email,
+                    'class_name' => $child->class ? $child->class->class_name : 'Non assignée',
+                    'profile_picture' => $child->user->profile_picture ?? 'avatar.png'
+                ];
+            });
+            
+            $childrenCount = $children->count();
+            
+            // Calculer les présences d'aujourd'hui
+            $today = Carbon::today();
+            $presentToday = 0;
+            
+            foreach ($parent->children as $child) {
+                $attendance = Attendance::where('student_id', $child->id)
+                                      ->whereDate('attendence_date', $today)
+                                      ->where('attendence_status', 1)
+                                      ->exists();
+                if ($attendance) {
+                    $presentToday++;
+                }
+            }
+            
+            // Calculer le taux de présence (30 derniers jours)
+            $attendanceRate = 0;
+            if ($childrenCount > 0) {
+                $totalAttendances = 0;
+                $totalExpected = 0;
+                
+                $last30Days = Carbon::now()->subDays(30);
+                
+                foreach ($parent->children as $child) {
+                    $attendances = Attendance::where('student_id', $child->id)
+                                           ->where('attendence_date', '>=', $last30Days)
+                                           ->get();
+                    
+                    $present = $attendances->where('attendence_status', 1)->count();
+                    $total = $attendances->count();
+                    
+                    $totalAttendances += $present;
+                    $totalExpected += $total;
+                }
+                
+                if ($totalExpected > 0) {
+                    $attendanceRate = round(($totalAttendances / $totalExpected) * 100);
+                } else {
+                    $attendanceRate = 95; // Valeur par défaut si pas de données
+                }
+            }
 
-            return view('home', compact('parents'));
+            return view('home', compact('children', 'childrenCount', 'presentToday', 'attendanceRate'));
 
         } elseif ($user->hasRole('Student')) {
             

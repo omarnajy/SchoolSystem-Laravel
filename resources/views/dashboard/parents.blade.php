@@ -115,10 +115,10 @@
 
                                     <!-- Actions -->
                                     <div class="flex space-x-2">
-                                        <a href="{{ route('student.show', $child->id ?? 1) }}"
+                                        <a href="{{ route('schedules.my.show') }}"
                                             class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200">
                                             <i class="fas fa-eye mr-1"></i>
-                                            Voir Profil
+                                            Voir EDT
                                         </a>
                                         <a href="{{ route('attendance.index') }}"
                                             class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-semibold rounded-lg hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition-all duration-200">

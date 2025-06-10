@@ -72,7 +72,7 @@
                                 Nom d'utilisateur
                             </label>
                             <div class="relative">
-                                <input type="text" name="name" id="name" value="{{ $user->name }}"
+                                <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"
                                     placeholder="Entrez le nom complet"
                                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white @error('name') border-red-300 bg-red-50 @enderror">
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -101,7 +101,7 @@
                                 Adresse Email
                             </label>
                             <div class="relative">
-                                <input type="email" name="email" id="email" value="{{ $user->email }}"
+                                <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
                                     placeholder="utilisateur@exemple.com"
                                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white @error('email') border-red-300 bg-red-50 @enderror">
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -148,31 +148,69 @@
                             </div>
                         </div>
 
-                        <!-- Role Selection -->
+                        <!-- Role Selection - CORRECTED -->
                         <div class="group">
-                            <label for="selectedrole" class="block text-sm font-semibold text-gray-700 mb-3">
-                                Nouveau rôle
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                Sélectionner les nouveau(x) rôle(s)
                             </label>
-                            <div class="relative">
-                                <select name="selectedrole" id="selectedrole"
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white appearance-none">
-                                    <option value="">-- Sélectionner un nouveau rôle --</option>
-                                    @foreach ($roles as $role)
-                                        <option value="{{ $role->name }}"
-                                            @foreach ($user->roles as $item)
-                                            {{ $item->id === $role->id ? 'selected' : '' }} @endforeach>
-                                            {{ $role->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @foreach ($roles as $role)
+                                    <div class="relative">
+                                        <input type="checkbox" name="selectedrole[]" value="{{ $role->name }}"
+                                            id="role_{{ $role->id }}"
+                                            {{ $user->hasRole($role->name) ? 'checked' : '' }} class="peer sr-only">
+                                        <label for="role_{{ $role->id }}"
+                                            class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition-all duration-200">
+                                            <div class="flex items-center w-full">
+                                                <div
+                                                    class="w-5 h-5 border-2 border-gray-300 rounded peer-checked:border-emerald-500 peer-checked:bg-emerald-500 flex items-center justify-center transition-all duration-200">
+                                                    <svg class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100"
+                                                        fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                            clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <span class="font-medium text-gray-900">{{ $role->name }}</span>
+                                                    <p class="text-sm text-gray-500">
+                                                        @switch($role->name)
+                                                            @case('Admin')
+                                                                Accès complet au système
+                                                            @break
+
+                                                            @case('Teacher')
+                                                                Gestion des cours et étudiants
+                                                            @break
+
+                                                            @case('Student')
+                                                                Accès étudiant aux cours
+                                                            @break
+
+                                                            @case('Parent')
+                                                                Suivi des enfants
+                                                            @break
+
+                                                            @default
+                                                                Rôle {{ $role->name }}
+                                                        @endswitch
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                @endforeach
                             </div>
+                            @error('selectedrole')
+                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                    {{ $message }}
+                                </p>
+                            @enderror
                         </div>
                     </div>
 
@@ -215,11 +253,27 @@
                         <ul class="mt-2 text-sm text-amber-700 space-y-1">
                             <li>• La modification du rôle prendra effet immédiatement</li>
                             <li>• L'utilisateur pourrait perdre l'accès à certaines fonctionnalités</li>
-                            <li>• Assurez-vous que le nouveau rôle correspond aux besoins</li>
+                            <li>• Les profils spécialisés seront créés/supprimés automatiquement</li>
+                            <li>• Un utilisateur peut avoir plusieurs rôles simultanément</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        /* Custom checkbox styles */
+        input[type="checkbox"]:checked+label .w-5 {
+            @apply border-emerald-500 bg-emerald-500;
+        }
+
+        input[type="checkbox"]:checked+label .w-5 svg {
+            @apply opacity-100;
+        }
+
+        input[type="checkbox"]:focus+label {
+            @apply ring-2 ring-emerald-500 ring-offset-2;
+        }
+    </style>
 @endsection

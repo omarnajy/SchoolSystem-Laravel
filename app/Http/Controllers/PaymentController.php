@@ -7,6 +7,7 @@ use App\Parents;
 use App\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class PaymentController extends Controller
 {
@@ -54,8 +55,19 @@ class PaymentController extends Controller
 
         $academicYears = Payment::distinct()->pluck('academic_year');
         $paymentTypes = Payment::distinct()->pluck('payment_type');
+        
+        // Données pour les modals d'édition
+        $parents = Parents::with('user')->get();
+        $students = Student::with('user')->get();
 
-        return view('backend.payments.index', compact('payments', 'stats', 'academicYears', 'paymentTypes'));
+        return view('backend.payments.index', compact(
+            'payments', 
+            'stats', 
+            'academicYears', 
+            'paymentTypes',
+            'parents',
+            'students'
+        ));
     }
 
     public function create()
@@ -99,6 +111,10 @@ class PaymentController extends Controller
     public function show(Payment $payment)
     {
         $payment->load(['parent.user', 'student.user', 'createdBy', 'updatedBy']);
+
+        // Données pour les modals d'édition
+        $parents = Parents::with('user')->get();
+        $students = Student::with('user')->get();
         
         return view('backend.payments.show', compact('payment'));
     }
@@ -129,6 +145,7 @@ class PaymentController extends Controller
             'academic_year' => 'required|string',
             'period' => 'nullable|string',
             'due_date' => 'required|date',
+            'status' => 'nullable|in:pending,paid,overdue,cancelled',
             'notes' => 'nullable|string'
         ]);
 
@@ -140,6 +157,7 @@ class PaymentController extends Controller
             'academic_year' => $request->academic_year,
             'period' => $request->period,
             'due_date' => $request->due_date,
+            'status' => $request->status ?? $payment->status,
             'notes' => $request->notes,
             'updated_by' => auth()->id()
         ]);
@@ -148,17 +166,31 @@ class PaymentController extends Controller
                          ->with('success', 'Paiement mis à jour avec succès.');
     }
 
-    public function markAsPaid(Request $request, Payment $payment)
+    // Nouvelle méthode pour marquer comme payé depuis les modals
+    public function markPaid(Request $request, Payment $payment)
     {
         $request->validate([
             'payment_method' => 'required|string',
             'transaction_reference' => 'nullable|string'
         ]);
 
-        $payment->markAsPaid($request->payment_method, $request->transaction_reference);
+        // Utiliser la méthode existante ou créer une nouvelle logique
+        $payment->update([
+            'status' => 'paid',
+            'payment_method' => $request->payment_method,
+            'transaction_reference' => $request->transaction_reference,
+            'paid_date' => now(),
+            'updated_by' => auth()->id()
+        ]);
 
         return redirect()->back()
-                         ->with('success', 'Paiement marqué comme payé.');
+                         ->with('success', 'Paiement marqué comme payé avec succès.');
+    }
+
+    // Alias pour la compatibilité avec l'ancien code
+    public function markAsPaid(Request $request, Payment $payment)
+    {
+        return $this->markPaid($request, $payment);
     }
 
     public function destroy(Payment $payment)
@@ -218,18 +250,97 @@ class PaymentController extends Controller
         }
     }
 
-    // Méthode pour marquer automatiquement les paiements en retard
+    //Méthode pour marquer automatiquement les paiements en retard
     public function updateOverduePayments()
     {
-        $updated = Payment::where('status', 'pending')
-                         ->where('due_date', '<', now())
-                         ->update([
-                             'status' => 'overdue',
-                             'updated_by' => auth()->id()
-                         ]);
+        try {
+            // Récupérer tous les paiements en attente dont la date d'échéance est dépassée
+            $overduePayments = Payment::where('status', 'pending')
+                                     ->where('due_date', '<', Carbon::now())
+                                     ->get();
 
-        return redirect()->back()
-                         ->with('success', "{$updated} paiements marqués comme en retard.");
+            $updated = 0;
+            foreach ($overduePayments as $payment) {
+                $payment->update([
+                    'status' => 'overdue',
+                    'updated_by' => auth()->id(),
+                    'updated_at' => now()
+                ]);
+                $updated++;
+            }
+
+            // Message de succès avec détails
+            if ($updated > 0) {
+                return redirect()->route('payments.index')
+                               ->with('success', "{$updated} paiement(s) marqué(s) comme en retard.");
+            } else {
+                return redirect()->route('payments.index')
+                               ->with('info', 'Aucun paiement en retard trouvé.');
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->route('payments.index')
+                           ->with('error', 'Erreur lors de la mise à jour des paiements en retard: ' . $e->getMessage());
+        }
+    }
+
+    // Méthode pour afficher les paiements d'un parent
+    public function parentPayments(Request $request)
+    {
+        // Récupérer le parent connecté
+        $parentUser = auth()->user();
+        $parent = Parents::where('user_id', $parentUser->id)->first();
+
+        if (!$parent) {
+            return redirect()->route('home')->with('error', 'Profil parent non trouvé.');
+        }
+
+        $query = Payment::with(['parent.user', 'student.user'])
+                       ->where('parent_id', $parent->id);
+
+        // Filtres
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('academic_year')) {
+            $query->where('academic_year', $request->academic_year);
+        }
+
+        if ($request->filled('payment_type')) {
+            $query->where('payment_type', $request->payment_type);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhere('period', 'like', "%{$search}%");
+            });
+        }
+
+        $payments = $query->latest()->paginate(10);
+
+        // Statistiques pour ce parent
+        $stats = [
+            'total_payments' => Payment::where('parent_id', $parent->id)->count(),
+            'pending_payments' => Payment::where('parent_id', $parent->id)->pending()->count(),
+            'paid_payments' => Payment::where('parent_id', $parent->id)->paid()->count(),
+            'overdue_payments' => Payment::where('parent_id', $parent->id)->overdue()->count(),
+            'total_amount_pending' => Payment::where('parent_id', $parent->id)->pending()->sum('amount'),
+            'total_amount_paid' => Payment::where('parent_id', $parent->id)->paid()->sum('amount'),
+            'total_amount_overdue' => Payment::where('parent_id', $parent->id)->overdue()->sum('amount'),
+        ];
+
+        $academicYears = Payment::where('parent_id', $parent->id)->distinct()->pluck('academic_year');
+        $paymentTypes = Payment::where('parent_id', $parent->id)->distinct()->pluck('payment_type');
+
+        return view('backend.payments.parent-index', compact(
+            'payments', 
+            'stats', 
+            'academicYears', 
+            'paymentTypes',
+            'parent'
+        ));
     }
 }
-?>

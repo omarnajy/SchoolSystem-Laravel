@@ -89,6 +89,12 @@ return [
             'driver' => 'errorlog',
             'level' => 'debug',
         ],
+
+        'import' => [
+        'driver' => 'single',
+        'path' => storage_path('logs/import.log'),
+        'level' => env('LOG_LEVEL', 'debug'),
+    ],
     ],
 
 ];

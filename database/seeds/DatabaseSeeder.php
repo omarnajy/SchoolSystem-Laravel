@@ -15,7 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(RolesAndPermissionsSeeder::class);
+        $this->call([
+            RolesAndPermissionsSeeder::class,   
+            ScheduleSeeder::class,
+        ]);
 
         $user = User::create([
             'name'          => 'Admin',
@@ -94,6 +97,7 @@ class DatabaseSeeder extends Seeder
                 'created_at'        => date("Y-m-d H:i:s")
             ]
         ]);
-
+        
     }
+    
 }

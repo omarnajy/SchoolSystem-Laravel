@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Parents;
 use Illuminate\Http\Request;
-
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\ParentsImport;
+use App\Exports\ParentsTemplateExport;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -172,4 +175,161 @@ class ParentsController extends Controller
 
         return back();
     }
+
+    /**
+ * Télécharger le modèle de fichier d'import pour les parents
+ */
+public function downloadTemplate($type = 'excel')
+{
+    try {
+        if ($type === 'csv') {
+            $filename = 'modele_import_parents.csv';
+            $headers = [
+                'nom',
+                'email',
+                'mot_de_passe',
+                'genre',
+                'telephone',
+                'adresse_actuelle',
+                'adresse_permanente',
+                'profession',
+                'contact_urgence'
+            ];
+
+            // Créer le contenu CSV
+            $csvContent = implode(',', $headers) . "\n";
+            
+            // Ajouter des exemples de données
+            $examples = [
+                [
+                    'Ahmed Alami',
+                    'ahmed.alami@parent.ma',
+                    'motdepasse123',
+                    'male',
+                    '+212612345678',
+                    '123 Avenue Hassan II, Casablanca',
+                    '456 Rue Mohamed V, Rabat',
+                    'Ingénieur',
+                    '+212687654321'
+                ],
+                [
+                    'Fatima Bennani',
+                    'fatima.bennani@parent.ma',
+                    'password456',
+                    'female',
+                    '+212698765432',
+                    '789 Boulevard Zerktouni, Casablanca',
+                    '321 Avenue des FAR, Casablanca',
+                    'Médecin',
+                    '+212676543210'
+                ],
+                [
+                    'Mohammed Tazi',
+                    'mohammed.tazi@parent.ma',
+                    'securepwd789',
+                    'male',
+                    '+212665432109',
+                    '45 Rue Allal Ben Abdellah, Rabat',
+                    '67 Avenue Ibn Sina, Rabat',
+                    'Professeur',
+                    '+212654321098'
+                ]
+            ];
+
+            foreach ($examples as $example) {
+                $csvContent .= '"' . implode('","', $example) . '"' . "\n";
+            }
+            
+            return response($csvContent)
+                ->header('Content-Type', 'text/csv; charset=UTF-8')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->header('Content-Length', strlen($csvContent));
+                
+        } else {
+            // Pour Excel
+            return Excel::download(new ParentsTemplateExport(), 'modele_import_parents.xlsx');
+        }
+        
+    } catch (\Exception $e) {
+        \Log::error('Erreur téléchargement template parents: ' . $e->getMessage());
+        
+        return redirect()->back()->with('error', 'Erreur lors du téléchargement du modèle: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Importer les parents en lot
+ */
+public function bulkImport(Request $request)
+{
+    try {
+        // Validation du fichier
+        $validator = Validator::make($request->all(), [
+            'import_file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fichier invalide. Veuillez vérifier le format et la taille.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $file = $request->file('import_file');
+        
+        // Créer une instance d'import personnalisée
+        $import = new ParentsImport();
+        
+        // Importer le fichier
+        Excel::import($import, $file);
+        
+        // Récupérer les résultats
+        $results = $import->getResults();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Import terminé avec succès',
+            'total' => $results['total'],
+            'success' => $results['success'],
+            'errors' => $results['errors'],
+            'errorDetails' => $results['errorDetails']
+        ]);
+
+    } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+        $failures = $e->failures();
+        $errorDetails = [];
+        
+        foreach ($failures as $failure) {
+            $errorDetails[] = [
+                'ligne' => $failure->row(),
+                'erreur' => implode(', ', $failure->errors())
+            ];
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreurs de validation dans le fichier',
+            'total' => count($failures),
+            'success' => 0,
+            'errors' => count($failures),
+            'errorDetails' => $errorDetails
+        ], 422);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de l\'importation: ' . $e->getMessage(),
+            'total' => 0,
+            'success' => 0,
+            'errors' => 1,
+            'errorDetails' => [
+                [
+                    'ligne' => 'Système',
+                    'erreur' => $e->getMessage()
+                ]
+            ]
+        ], 500);
+    }
+}
 }

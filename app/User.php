@@ -83,4 +83,17 @@ class User extends Authenticatable
         }
         return false;
     }
+
+    public function getSchedules($academicYear = null, $semester = null)
+{
+    if ($this->hasRole('Student') && $this->student) {
+        return $this->student->getSchedules($academicYear, $semester);
+    } elseif ($this->hasRole('Teacher') && $this->teacher) {
+        return $this->teacher->getCurrentSchedules($academicYear, $semester);
+    } elseif ($this->hasRole('Parent') && $this->parent) {
+        return $this->parent->getChildrenSchedules($academicYear, $semester);
+    }
+    
+    return collect([]);
+}
 }

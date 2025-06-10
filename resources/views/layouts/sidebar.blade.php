@@ -2,6 +2,9 @@
 
 <!-- En-tête de la sidebar avec dégradé -->
 
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
 @role('Admin')
     <aside
         class="sidebar w-64 bg-white/95 backdrop-blur-md shadow-2xl h-screen fixed left-0 top-16 overflow-y-auto border-r border-gray-200/50 z-40">
@@ -140,6 +143,22 @@
                     </div>
                 </div>
 
+                <!-- Emplois du Temps -->
+                <div class="sidebar-item">
+                    <a href="{{ route('schedules.index') }}"
+                        class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('schedules.*') ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-cyan-100 hover:text-cyan-700' }}">
+                        <div
+                            class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('schedules.*') ? 'bg-white/20' : 'bg-cyan-100 group-hover:bg-cyan-200' }} transition-all duration-300">
+                            <i
+                                class="fas fa-calendar-alt {{ request()->routeIs('schedules.*') ? 'text-white' : 'text-cyan-600' }}"></i>
+                        </div>
+                        <span class="font-medium">Emplois du Temps</span>
+                        @if (request()->routeIs('schedules.*'))
+                            <div class="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                        @endif
+                    </a>
+                </div>
+
                 <!-- Section Suivi -->
                 <div class="pt-6">
                     <div class="flex items-center mb-4">
@@ -253,17 +272,18 @@
                     </div>
 
                     <div class="space-y-2">
-                        <!-- Mes Enfants -->
+
+                        <!-- Mon Emploi du Temps (Parent) -->
                         <div class="sidebar-item">
-                            <a href="{{ route('parents.show', auth()->user()->id) }}"
-                                class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('parents.show') ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-pink-50 hover:to-pink-100 hover:text-pink-700' }}">
+                            <a href="{{ route('schedules.my.show') }}"
+                                class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('schedules.*') ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-cyan-100 hover:text-cyan-700' }}">
                                 <div
-                                    class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('parents.show') ? 'bg-white/20' : 'bg-pink-100 group-hover:bg-pink-200' }} transition-all duration-300">
+                                    class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('schedules.*') ? 'bg-white/20' : 'bg-cyan-100 group-hover:bg-cyan-200' }} transition-all duration-300">
                                     <i
-                                        class="fas fa-heart {{ request()->routeIs('parents.show') ? 'text-white' : 'text-pink-600' }}"></i>
+                                        class="fas fa-calendar-alt {{ request()->routeIs('schedules.*') ? 'text-white' : 'text-cyan-600' }}"></i>
                                 </div>
-                                <span class="font-medium">Mes Enfants</span>
-                                @if (request()->routeIs('parents.show'))
+                                <span class="font-medium">Emploi du Temps</span>
+                                @if (request()->routeIs('schedules.*'))
                                     <div class="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                 @endif
                             </a>
@@ -280,6 +300,21 @@
                                 </div>
                                 <span class="font-medium">Présences</span>
                                 @if (request()->routeIs('attendance.*'))
+                                    <div class="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                @endif
+                            </a>
+                        </div>
+                        <!-- Mes Paiements -->
+                        <div class="sidebar-item">
+                            <a href="{{ route('parent.payments.index') }}"
+                                class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('parent.payments.*') ? 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-100 hover:text-yellow-700' }}">
+                                <div
+                                    class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('parent.payments.*') ? 'bg-white/20' : 'bg-yellow-100 group-hover:bg-yellow-200' }} transition-all duration-300">
+                                    <i
+                                        class="fas fa-credit-card {{ request()->routeIs('parent.payments.*') ? 'text-white' : 'text-yellow-600' }}"></i>
+                                </div>
+                                <span class="font-medium">Mes Paiements</span>
+                                @if (request()->routeIs('parent.payments.*'))
                                     <div class="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                 @endif
                             </a>
@@ -322,45 +357,22 @@
                     </a>
                 </div>
                 <!-- Section Enseignant -->
-                <div class="pt-6">
-                    <div class="flex items-center mb-4">
-                        <div class="flex-1 h-px bg-gray-300"></div>
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider px-3">Mon Enseignement</p>
-                        <div class="flex-1 h-px bg-gray-300"></div>
-                    </div>
 
-                    <div class="space-y-2">
-                        <!-- Mes Classes -->
-                        <div class="sidebar-item">
-                            <a href="{{ route('teacher.show', auth()->user()->id) }}"
-                                class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('teacher.show') ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:text-purple-700' }}">
-                                <div
-                                    class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('teacher.show') ? 'bg-white/20' : 'bg-purple-100 group-hover:bg-purple-200' }} transition-all duration-300">
-                                    <i
-                                        class="fas fa-chalkboard-teacher {{ request()->routeIs('teacher.show') ? 'text-white' : 'text-purple-600' }}"></i>
-                                </div>
-                                <span class="font-medium">Mes Classes</span>
-                                @if (request()->routeIs('teacher.show'))
-                                    <div class="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                                @endif
-                            </a>
-                        </div>
-
-                        <!-- Présences -->
-                        <div class="sidebar-item">
-                            <a href="{{ route('attendance.index') }}"
-                                class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('attendance.*') ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-teal-100 hover:text-teal-700' }}">
-                                <div
-                                    class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('attendance.*') ? 'bg-white/20' : 'bg-teal-100 group-hover:bg-teal-200' }} transition-all duration-300">
-                                    <i
-                                        class="fas fa-calendar-check {{ request()->routeIs('attendance.*') ? 'text-white' : 'text-teal-600' }}"></i>
-                                </div>
-                                <span class="font-medium">Présences</span>
-                                @if (request()->routeIs('attendance.*'))
-                                    <div class="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                                @endif
-                            </a>
-                        </div>
+                <div class="space-y-2">
+                    <!-- Mon Planning (Teacher) -->
+                    <div class="sidebar-item">
+                        <a href="{{ route('schedules.my.show') }}"
+                            class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('schedules.*') ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-cyan-100 hover:text-cyan-700' }}">
+                            <div
+                                class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('schedules.*') ? 'bg-white/20' : 'bg-cyan-100 group-hover:bg-cyan-200' }} transition-all duration-300">
+                                <i
+                                    class="fas fa-calendar-alt {{ request()->routeIs('schedules.*') ? 'text-white' : 'text-cyan-600' }}"></i>
+                            </div>
+                            <span class="font-medium">Mon Planning</span>
+                            @if (request()->routeIs('schedules.*'))
+                                <div class="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                            @endif
+                        </a>
                     </div>
                 </div>
             </nav>
@@ -409,15 +421,15 @@
                     <div class="space-y-2">
                         <!-- Mon Profil -->
                         <div class="sidebar-item">
-                            <a href="{{ route('student.show', auth()->user()->id) }}"
-                                class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('student.show') ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 hover:text-green-700' }}">
+                            <a href="{{ route('schedules.my.show') }}"
+                                class="flex items-center space-x-3 p-3 rounded-xl group transition-all duration-300 {{ request()->routeIs('schedules.*') ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg transform scale-105' : 'text-gray-700 hover:bg-gradient-to-r hover:from-cyan-50 hover:to-cyan-100 hover:text-cyan-700' }}">
                                 <div
-                                    class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('student.show') ? 'bg-white/20' : 'bg-green-100 group-hover:bg-green-200' }} transition-all duration-300">
+                                    class="w-10 h-10 rounded-lg flex items-center justify-center {{ request()->routeIs('schedules.*') ? 'bg-white/20' : 'bg-cyan-100 group-hover:bg-cyan-200' }} transition-all duration-300">
                                     <i
-                                        class="fas fa-user-graduate {{ request()->routeIs('student.show') ? 'text-white' : 'text-green-600' }}"></i>
+                                        class="fas fa-calendar-alt {{ request()->routeIs('schedules.*') ? 'text-white' : 'text-cyan-600' }}"></i>
                                 </div>
-                                <span class="font-medium">Mon Profil</span>
-                                @if (request()->routeIs('student.show'))
+                                <span class="font-medium">Emploi du Temps</span>
+                                @if (request()->routeIs('schedules.*'))
                                     <div class="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                 @endif
                             </a>

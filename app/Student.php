@@ -37,4 +37,27 @@ class Student extends Model
     {
         return $this->hasMany(Attendance::class);
     }
+
+       /**
+     * Obtenir l'emploi du temps de l'étudiant via sa classe
+     */
+    public function getSchedules($academicYear = null, $semester = null)
+    {
+        if (!$this->class_id) {
+            return collect([]);
+        }
+
+        $academicYear = $academicYear ?: date('Y');
+        $semester = $semester ?: '1';
+
+        return Schedule::with(['subject', 'teacher.user'])
+                      ->where('class_id', $this->class_id)
+                      ->where('academic_year', $academicYear)
+                      ->where('semester', $semester)
+                      ->where('is_active', true)
+                      ->orderBy('day_of_week')
+                      ->orderBy('start_time')
+                      ->get();
+    }
+
 }

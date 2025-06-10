@@ -116,7 +116,7 @@
                     <p class="mt-4 text-gray-600 font-medium">Gérez votre équipe pédagogique avec excellence</p>
                 </div>
 
-                <div class="animate-bounceIn">
+                <div class="animate-bounceIn space-x-4">
                     <a href="{{ route('teacher.create') }}"
                         class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-2xl shadow-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-sparkle">
                         <svg class="w-5 h-5 mr-3 transition-transform group-hover:rotate-90" fill="currentColor"
@@ -130,6 +130,20 @@
                             class="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         </div>
                     </a>
+
+                    <button id="openTeacherBulkImport"
+                        class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-2xl shadow-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                        <svg class="w-5 h-5 mr-3 transition-transform group-hover:scale-110" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Import en Lot
+                        <div
+                            class="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                    </button>
                 </div>
             </div>
 
@@ -301,7 +315,8 @@
                                                 class="text-gray-700 font-medium text-sm">{{ $teacher->user->email }}</span>
                                         </div>
                                         <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="currentColor"
+                                                viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd"
                                                     d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
                                                     clip-rule="evenodd" />
@@ -313,9 +328,18 @@
                                     </div>
                                 </div>
 
-                                <!-- Matières enseignées -->
+                                <!-- Matières enseignées  -->
                                 <div class="col-span-3">
                                     <div class="flex flex-wrap gap-1">
+                                        @php
+                                            // Debug : afficher les informations sur les relations
+                                            $subjectsCount = $teacher->subjects ? $teacher->subjects->count() : 0;
+                                            $hasSubjectsRelation = method_exists($teacher, 'subjects');
+
+                                            // Alternative : chercher via la table subjects directement
+                                            $subjectsViaTable = \App\Subject::where('teacher_id', $teacher->id)->get();
+                                        @endphp
+
                                         @if ($teacher->subjects && $teacher->subjects->count() > 0)
                                             @foreach ($teacher->subjects as $subjectIndex => $subject)
                                                 @php
@@ -334,7 +358,7 @@
                                                 @endphp
                                                 <span
                                                     class="inline-flex items-center px-2 py-1 {{ $subjectColorClass }} text-white text-xs font-bold rounded-full shadow-md hover:scale-110 transition-transform duration-200 cursor-pointer">
-                                                    {{ $subject->subject_code }}
+                                                    {{ $subject->subject_code ?? ($subject->name ?? 'N/A') }}
                                                 </span>
                                             @endforeach
 
@@ -344,6 +368,24 @@
                                                     +{{ $teacher->subjects->count() - 3 }}
                                                 </span>
                                             @endif
+                                        @elseif ($subjectsViaTable->count() > 0)
+                                            <!-- Fallback : afficher via la table subjects -->
+                                            @foreach ($subjectsViaTable as $subjectIndex => $subject)
+                                                @php
+                                                    $subjectColors = [
+                                                        'bg-gradient-to-r from-blue-500 to-blue-600',
+                                                        'bg-gradient-to-r from-green-500 to-green-600',
+                                                        'bg-gradient-to-r from-purple-500 to-purple-600',
+                                                        'bg-gradient-to-r from-pink-500 to-pink-600',
+                                                    ];
+                                                    $subjectColorClass =
+                                                        $subjectColors[$subjectIndex % count($subjectColors)];
+                                                @endphp
+                                                <span
+                                                    class="inline-flex items-center px-2 py-1 {{ $subjectColorClass }} text-white text-xs font-bold rounded-full shadow-md">
+                                                    {{ $subject->subject_code ?? ($subject->name ?? 'N/A') }} (via table)
+                                                </span>
+                                            @endforeach
                                         @else
                                             <span
                                                 class="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded-full">
@@ -352,7 +394,7 @@
                                                         d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                                                         clip-rule="evenodd" />
                                                 </svg>
-                                                Aucune matière
+                                                Aucune matière trouvée
                                             </span>
                                         @endif
                                     </div>
@@ -532,10 +574,280 @@
         </div>
     </div>
 
+
     @include('backend.modals.delete', ['name' => 'teacher'])
+    <!-- Modal d'import en lot pour enseignants -->
+    <div id="teacherBulkImportModal"
+        class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slideDown">
+            <!-- Header du modal -->
+            <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-8 py-6 rounded-t-3xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">Import en Lot d'Enseignants</h3>
+                            <p class="text-teal-100 font-medium">Importez plusieurs enseignants depuis un fichier Excel ou
+                                CSV</p>
+                        </div>
+                    </div>
+                    <button id="closeTeacherBulkImport" class="p-2 hover:bg-white/20 rounded-xl transition-colors">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corps du modal -->
+            <div class="p-8">
+                <!-- Étapes du processus -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between">
+                        <div id="teacherStep1" class="flex items-center step active">
+                            <div
+                                class="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full flex items-center justify-center font-bold mr-3">
+                                1</div>
+                            <span class="font-semibold text-gray-700">Télécharger le modèle</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200 mx-4 rounded-full">
+                            <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full teacherStep1-progress"
+                                style="width: 0%"></div>
+                        </div>
+                        <div id="teacherStep2" class="flex items-center step">
+                            <div
+                                class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold mr-3">
+                                2</div>
+                            <span class="font-semibold text-gray-500">Importer le fichier</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200 mx-4 rounded-full">
+                            <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full teacherStep2-progress"
+                                style="width: 0%"></div>
+                        </div>
+                        <div id="teacherStep3" class="flex items-center step">
+                            <div
+                                class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold mr-3">
+                                3</div>
+                            <span class="font-semibold text-gray-500">Validation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu principal -->
+                <div class="space-y-6">
+                    <!-- Section 1: Télécharger le modèle -->
+                    <div id="teacherDownloadSection"
+                        class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </h4>
+                        <p class="text-gray-600 mb-4">Téléchargez le modèle Excel avec les colonnes requises et
+                            remplissez-le avec les données des enseignants.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-white rounded-xl p-4 border border-emerald-200">
+                                <h5 class="font-bold text-gray-800 mb-2">Colonnes obligatoires :</h5>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>nom (obligatoire)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>email (obligatoire)
+                                    </li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>mot_de_passe
+                                        (obligatoire)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>genre (male/female)
+                                    </li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>telephone</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 border border-emerald-200">
+                                <h5 class="font-bold text-gray-800 mb-2">Autres colonnes :</h5>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>date_naissance
+                                        (AAAA-MM-JJ)</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>adresse_actuelle</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>adresse_permanente</li>
+                                    <li class="flex items-center"><span
+                                            class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>matieres_enseignees
+                                        (séparées par virgules)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-4">
+                            <a href="{{ route('teachers.download-template', 'excel') }}"
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Télécharger Modèle Excel
+                            </a>
+                            <a href="{{ route('teachers.download-template', 'csv') }}"
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Télécharger Modèle CSV
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Zone d'upload -->
+                    <div id="teacherUploadSection"
+                        class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            Étape 2: Importer votre fichier
+                        </h4>
+
+                        <form id="teacherImportForm" action="{{ route('teachers.bulk-import') }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <div class="file-upload-area bg-white rounded-xl p-8 text-center border-2 border-dashed border-gray-300 hover:border-purple-400 transition-all duration-300 cursor-pointer"
+                                id="teacherFileDropArea">
+                                <div id="teacherUploadContent">
+                                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none"
+                                        stroke="currentColor" viewBox="0 0 48 48">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
+                                    </svg>
+                                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Glissez-déposez votre fichier ici
+                                    </h3>
+                                    <p class="text-gray-500 mb-4">ou cliquez pour sélectionner un fichier</p>
+                                    <p class="text-sm text-gray-400">Formats acceptés: .xlsx, .xls, .csv (max 10MB)</p>
+                                </div>
+                                <input type="file" id="teacherFileInput" name="import_file" accept=".xlsx,.xls,.csv"
+                                    class="hidden">
+                            </div>
+
+                            <!-- Informations du fichier sélectionné -->
+                            <div id="teacherFileInfo" class="hidden mt-4 bg-white rounded-xl p-4 border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p id="teacherFileName" class="font-semibold text-gray-800"></p>
+                                            <p id="teacherFileSize" class="text-sm text-gray-500"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="teacherRemoveFile"
+                                        class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Barre de progression -->
+                            <div id="teacherProgressSection" class="hidden mt-4">
+                                <div class="bg-gray-200 rounded-full h-3 mb-2">
+                                    <div id="teacherProgressBar"
+                                        class="bg-gradient-to-r from-emerald-500 to-teal-600 h-3 rounded-full progress-bar">
+                                    </div>
+                                </div>
+                                <p id="teacherProgressText" class="text-sm text-gray-600 text-center">Importation en
+                                    cours...</p>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="flex justify-end space-x-4 mt-6">
+                                <button type="button" id="teacherCancelImport"
+                                    class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                                    Annuler
+                                </button>
+                                <button type="submit" id="teacherStartImport" disabled
+                                    class="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                                    <svg class="w-5 h-5 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    Commencer l'Import
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Section 3: Résultats -->
+                    <div id="teacherResultsSection"
+                        class="hidden bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            Résultat de l'importation
+                        </h4>
+                        <div id="teacherImportResults" class="space-y-4">
+                            <!-- Les résultats seront affichés ici -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer du modal -->
+            <div class="bg-gray-50 px-8 py-4 rounded-b-3xl border-t border-gray-200">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm text-gray-500">
+                        <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Assurez-vous que votre fichier respecte le format du modèle téléchargé
+                    </p>
+                    <button id="teacherCloseModalFooter" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @include('backend.teachers.bulk-import-modal')
 @endsection
 
 @push('scripts')
+    @include('backend.teachers.bulk-import-scripts')
     <script>
         // Fonction pour ouvrir le modal de suppression
         function deleteTeacher(url) {
@@ -584,5 +896,349 @@
                 $("#deletemodal").toggleClass("hidden");
             });
         });
+    </script>
+    <script>
+        // Variables globales pour les enseignants
+        let selectedTeacherFile = null;
+
+        // Éléments DOM pour les enseignants
+        const teacherModal = document.getElementById('teacherBulkImportModal');
+        const openTeacherBtn = document.getElementById('openTeacherBulkImport');
+        const closeTeacherBtns = [
+            document.getElementById('closeTeacherBulkImport'),
+            document.getElementById('teacherCloseModalFooter')
+        ];
+        const teacherFileDropArea = document.getElementById('teacherFileDropArea');
+        const teacherFileInput = document.getElementById('teacherFileInput');
+        const teacherFileInfo = document.getElementById('teacherFileInfo');
+        const teacherFileName = document.getElementById('teacherFileName');
+        const teacherFileSize = document.getElementById('teacherFileSize');
+        const teacherRemoveFileBtn = document.getElementById('teacherRemoveFile');
+        const teacherStartImportBtn = document.getElementById('teacherStartImport');
+        const teacherCancelImportBtn = document.getElementById('teacherCancelImport');
+        const teacherProgressSection = document.getElementById('teacherProgressSection');
+        const teacherProgressBar = document.getElementById('teacherProgressBar');
+        const teacherProgressText = document.getElementById('teacherProgressText');
+        const teacherResultsSection = document.getElementById('teacherResultsSection');
+        const teacherImportResults = document.getElementById('teacherImportResults');
+
+        // Ouvrir le modal des enseignants
+        if (openTeacherBtn) {
+            openTeacherBtn.addEventListener('click', function() {
+                teacherModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        // Fermer le modal des enseignants
+        closeTeacherBtns.forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', closeTeacherModal);
+            }
+        });
+
+        if (teacherCancelImportBtn) {
+            teacherCancelImportBtn.addEventListener('click', closeTeacherModal);
+        }
+
+        function closeTeacherModal() {
+            teacherModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            resetTeacherForm();
+        }
+
+        // Fermer en cliquant en dehors
+        teacherModal.addEventListener('click', function(e) {
+            if (e.target === teacherModal) {
+                closeTeacherModal();
+            }
+        });
+
+        // Gestion du drag & drop pour les enseignants
+        teacherFileDropArea.addEventListener('click', () => teacherFileInput.click());
+
+        teacherFileDropArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        teacherFileDropArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        teacherFileDropArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleTeacherFileSelect(files[0]);
+            }
+        });
+
+        teacherFileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleTeacherFileSelect(e.target.files[0]);
+            }
+        });
+
+        // Gérer la sélection de fichier pour les enseignants
+        function handleTeacherFileSelect(file) {
+            // Vérifier le type de fichier
+            const allowedTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+                'text/csv'
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert('Type de fichier non supporté. Veuillez sélectionner un fichier Excel (.xlsx, .xls) ou CSV.');
+                return;
+            }
+
+            // Vérifier la taille (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Le fichier est trop volumineux. Taille maximale: 10MB');
+                return;
+            }
+
+            selectedTeacherFile = file;
+            teacherFileName.textContent = file.name;
+            teacherFileSize.textContent = formatFileSize(file.size);
+
+            teacherFileInfo.classList.remove('hidden');
+            teacherStartImportBtn.disabled = false;
+
+            // Mettre à jour les étapes
+            updateTeacherStep(1, true);
+        }
+
+        // Supprimer le fichier sélectionné
+        if (teacherRemoveFileBtn) {
+            teacherRemoveFileBtn.addEventListener('click', function() {
+                selectedTeacherFile = null;
+                teacherFileInput.value = '';
+                teacherFileInfo.classList.add('hidden');
+                teacherStartImportBtn.disabled = true;
+                updateTeacherStep(1, false);
+            });
+        }
+
+        // Mettre à jour les étapes pour les enseignants
+        function updateTeacherStep(stepNumber, completed) {
+            const steps = document.querySelectorAll('#teacherBulkImportModal .step');
+            const progressBars = document.querySelectorAll('[class*="teacherStep"][class*="-progress"]');
+
+            steps.forEach((step, index) => {
+                const stepNum = index + 1;
+                const circle = step.querySelector('div');
+                const text = step.querySelector('span');
+
+                if (stepNum <= stepNumber && completed) {
+                    circle.className =
+                        'w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full flex items-center justify-center font-bold mr-3';
+                    text.className = 'font-semibold text-gray-700';
+
+                    if (stepNum < stepNumber) {
+                        circle.innerHTML =
+                            `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>`;
+                    }
+                } else if (stepNum > stepNumber || !completed) {
+                    circle.className =
+                        'w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold mr-3';
+                    text.className = 'font-semibold text-gray-500';
+                    circle.textContent = stepNum;
+                }
+            });
+
+            // Mettre à jour les barres de progression
+            progressBars.forEach((bar, index) => {
+                const stepNum = index + 1;
+                if (stepNum < stepNumber && completed) {
+                    bar.style.width = '100%';
+                } else {
+                    bar.style.width = '0%';
+                }
+            });
+        }
+
+        // Gérer la soumission du formulaire des enseignants
+        if (document.getElementById('teacherImportForm')) {
+            document.getElementById('teacherImportForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!selectedTeacherFile) return;
+
+                startTeacherImport();
+            });
+        }
+
+        // Démarrer l'importation des enseignants
+        function startTeacherImport() {
+            updateTeacherStep(2, true);
+            teacherProgressSection.classList.remove('hidden');
+            teacherStartImportBtn.disabled = true;
+
+            // Faire l'appel AJAX réel
+            const formData = new FormData();
+            formData.append('import_file', selectedTeacherFile);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+            $.ajax({
+                url: '{{ route('teachers.bulk-import') }}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                xhr: function() {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function(evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total * 100;
+                            teacherProgressBar.style.width = percentComplete + '%';
+                            teacherProgressText.textContent =
+                                `Importation en cours... ${Math.round(percentComplete)}%`;
+                        }
+                    }, false);
+                    return xhr;
+                },
+                success: function(response) {
+                    completeTeacherImport(response);
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Erreur lors de l\'importation';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    alert(errorMessage);
+                    resetTeacherForm();
+                }
+            });
+        }
+
+        // Finaliser l'importation des enseignants
+        function completeTeacherImport(response) {
+            updateTeacherStep(3, true);
+            teacherProgressSection.classList.add('hidden');
+            teacherResultsSection.classList.remove('hidden');
+
+            // Utiliser les vraies données de la réponse serveur
+            showTeacherImportResults(response);
+        }
+
+        // Afficher les résultats d'importation des enseignants
+        function showTeacherImportResults(results) {
+            const successCount = results.success || 0;
+            const errorCount = results.errors || 0;
+            const totalCount = results.total || 0;
+            const errorDetails = results.errorDetails || [];
+
+            const resultsHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white rounded-xl p-4 border border-green-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-green-600">${successCount}</p>
+                            <p class="text-sm text-gray-600">Enseignants importés</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-4 border border-red-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-red-600">${errorCount}</p>
+                            <p class="text-sm text-gray-600">Erreurs</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-4 border border-blue-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-blue-600">${totalCount}</p>
+                            <p class="text-sm text-gray-600">Total traité</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            ${errorCount > 0 && errorDetails.length > 0 ? `
+                                                                <div class="bg-white rounded-xl p-4 border border-red-200">
+                                                                    <h5 class="font-bold text-red-600 mb-3 flex items-center">
+                                                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                                        </svg>
+                                                                        Détail des erreurs
+                                                                    </h5>
+                                                                    <div class="space-y-2">
+                                                                        ${errorDetails.map(error => `
+                            <div class="flex items-start p-3 bg-red-50 rounded-lg">
+                                <span class="inline-flex items-center px-2 py-1 bg-red-200 text-red-800 text-xs font-bold rounded-full mr-3">
+                                    Ligne ${error.ligne || error.row || 'N/A'}
+                                </span>
+                                <span class="text-sm text-red-700">${error.erreur || error.message || error}</span>
+                            </div>
+                        `).join('')}
+                                                                    </div>
+                                                                </div>
+                                                            ` : ''}
+
+            <div class="flex justify-end space-x-4 mt-6">
+                <button onclick="closeTeacherModal()" class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                    Fermer
+                </button>
+                <button onclick="window.location.reload()" class="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105">
+                    <svg class="w-5 h-5 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                    </svg>
+                    Actualiser la page
+                </button>
+            </div>
+        `;
+
+            teacherImportResults.innerHTML = resultsHTML;
+        }
+
+        // Réinitialiser le formulaire des enseignants
+        function resetTeacherForm() {
+            selectedTeacherFile = null;
+            teacherFileInput.value = '';
+            teacherFileInfo.classList.add('hidden');
+            teacherProgressSection.classList.add('hidden');
+            teacherResultsSection.classList.add('hidden');
+            teacherStartImportBtn.disabled = true;
+
+            // Réinitialiser les étapes
+            updateTeacherStep(1, false);
+
+            // Réinitialiser les classes des étapes
+            document.getElementById('teacherStep1').querySelector('div').textContent = '1';
+            document.getElementById('teacherStep2').querySelector('div').textContent = '2';
+            document.getElementById('teacherStep3').querySelector('div').textContent = '3';
+        }
+
+        // Fonction utilitaire pour formater la taille du fichier (réutilisée)
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
     </script>
 @endpush

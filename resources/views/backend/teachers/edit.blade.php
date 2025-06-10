@@ -326,15 +326,7 @@
                                             </div>
                                             <span class="font-medium text-gray-700">Femme</span>
                                         </label>
-                                        <label
-                                            class="flex items-center px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-purple-300 transition-colors cursor-pointer {{ $teacher->gender == 'other' ? 'border-purple-500 bg-purple-50' : '' }}">
-                                            <input name="gender" type="radio" value="other"
-                                                {{ $teacher->gender == 'other' ? 'checked' : '' }} class="sr-only peer">
-                                            <div
-                                                class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:bg-purple-500 peer-checked:border-purple-500 mr-3 {{ $teacher->gender == 'other' ? 'bg-purple-500 border-purple-500' : '' }}">
-                                            </div>
-                                            <span class="font-medium text-gray-700">Autre</span>
-                                        </label>
+
                                     </div>
                                     @error('gender')
                                         <p class="text-red-500 text-sm flex items-center mt-2">

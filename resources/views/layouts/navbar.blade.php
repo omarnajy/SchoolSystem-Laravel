@@ -73,19 +73,8 @@
                                             class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors">
                                             <i class="fas fa-user text-blue-600 text-sm"></i>
                                         </div>
-                                        <span class="font-medium">Mon Profil</span>
+                                        <span class="font-medium"> Mon Profil</span>
                                     </a>
-
-                                    <a href="#"
-                                        class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:text-purple-700 transition-all duration-200 group">
-                                        <div
-                                            class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-purple-200 transition-colors">
-                                            <i class="fas fa-cog text-purple-600 text-sm"></i>
-                                        </div>
-                                        <span class="font-medium">Paramètres</span>
-                                    </a>
-
-                                    <hr class="my-2 border-gray-100">
 
                                     <form action="{{ route('logout') }}" method="POST" class="px-4 py-2">
                                         @csrf

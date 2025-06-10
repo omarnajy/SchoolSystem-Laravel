@@ -20,10 +20,10 @@
                     <i class="fas fa-arrow-left mr-2"></i>Retour
                 </a>
                 @if ($payment->status !== 'paid')
-                    <a href="{{ route('payments.edit', $payment) }}"
+                    <button type="button" onclick="openEditModal()"
                         class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center">
                         <i class="fas fa-edit mr-2"></i>Modifier
-                    </a>
+                    </button>
                 @endif
             </div>
         </div>
@@ -113,7 +113,16 @@
                                 @if ($payment->paid_date)
                                     <div>
                                         <dt class="text-sm font-medium text-gray-500">Date de Paiement</dt>
-                                        <dd class="mt-1 text-lg text-gray-900">{{ $payment->paid_date->format('d/m/Y') }}
+                                        <dd class="mt-1 text-lg text-gray-900">
+                                            {{ is_string($payment->paid_date) ? \Carbon\Carbon::parse($payment->paid_date)->format('d/m/Y') : $payment->paid_date->format('d/m/Y') }}
+                                        </dd>
+                                    </div>
+                                @endif
+                                @if ($payment->paid_at)
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">Date de Paiement</dt>
+                                        <dd class="mt-1 text-lg text-gray-900">
+                                            {{ is_string($payment->paid_at) ? \Carbon\Carbon::parse($payment->paid_at)->format('d/m/Y à H:i') : $payment->paid_at->format('d/m/Y à H:i') }}
                                         </dd>
                                     </div>
                                 @endif
@@ -142,15 +151,17 @@
                         </div>
                         <div class="p-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Méthode de Paiement</dt>
-                                    <dd class="mt-1">
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                            {{ ucfirst($payment->payment_method) }}
-                                        </span>
-                                    </dd>
-                                </div>
+                                @if ($payment->payment_method)
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">Méthode de Paiement</dt>
+                                        <dd class="mt-1">
+                                            <span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                                {{ ucfirst($payment->payment_method) }}
+                                            </span>
+                                        </dd>
+                                    </div>
+                                @endif
                                 @if ($payment->transaction_reference)
                                     <div>
                                         <dt class="text-sm font-medium text-gray-500">Référence de Transaction</dt>
@@ -174,8 +185,15 @@
                     </div>
                     <div class="p-6">
                         <div class="text-center mb-6">
-                            <img src="{{ asset('images/profile/' . $payment->parent->user->profile_picture) }}"
-                                alt="Avatar" class="w-20 h-20 rounded-full mx-auto border-4 border-gray-200">
+                            @if ($payment->parent->user->profile_picture)
+                                <img src="{{ asset('images/profile/' . $payment->parent->user->profile_picture) }}"
+                                    alt="Avatar" class="w-20 h-20 rounded-full mx-auto border-4 border-gray-200">
+                            @else
+                                <div
+                                    class="w-20 h-20 rounded-full mx-auto border-4 border-gray-200 bg-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-user text-2xl text-gray-400"></i>
+                                </div>
+                            @endif
                         </div>
                         <div class="space-y-3">
                             <div>
@@ -217,8 +235,15 @@
                         </div>
                         <div class="p-6">
                             <div class="text-center mb-6">
-                                <img src="{{ asset('images/profile/' . $payment->student->user->profile_picture) }}"
-                                    alt="Avatar" class="w-16 h-16 rounded-full mx-auto border-4 border-gray-200">
+                                @if ($payment->student->user->profile_picture)
+                                    <img src="{{ asset('images/profile/' . $payment->student->user->profile_picture) }}"
+                                        alt="Avatar" class="w-16 h-16 rounded-full mx-auto border-4 border-gray-200">
+                                @else
+                                    <div
+                                        class="w-16 h-16 rounded-full mx-auto border-4 border-gray-200 bg-gray-200 flex items-center justify-center">
+                                        <i class="fas fa-user text-xl text-gray-400"></i>
+                                    </div>
+                                @endif
                             </div>
                             <div class="space-y-3">
                                 <div>
@@ -251,15 +276,177 @@
                                 class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center">
                                 <i class="fas fa-check mr-2"></i>Marquer comme Payé
                             </button>
-                            <a href="{{ route('payments.edit', $payment) }}"
+                            <button type="button" onclick="openEditModal()"
                                 class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center">
                                 <i class="fas fa-edit mr-2"></i>Modifier
-                            </a>
+                            </button>
                         </div>
                     </div>
                 @endif
             </div>
         </div>
+
+        <!-- Modal d'édition -->
+        @if ($payment->status !== 'paid')
+            <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
+                    <form method="POST" action="{{ route('payments.update', $payment) }}">
+                        @csrf
+                        @method('PUT')
+                        <div class="mt-3">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-medium text-gray-900">Modifier le paiement</h3>
+                                <button type="button" onclick="closeEditModal()"
+                                    class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Parent -->
+                                <div>
+                                    <label for="parent_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Parent *
+                                    </label>
+                                    <select name="parent_id" id="parent_id"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required>
+                                        @foreach ($parents ?? [] as $parent)
+                                            <option value="{{ $parent->id }}"
+                                                {{ $payment->parent_id == $parent->id ? 'selected' : '' }}>
+                                                {{ $parent->user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Étudiant -->
+                                <div>
+                                    <label for="student_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Étudiant
+                                    </label>
+                                    <select name="student_id" id="student_id"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        <option value="">Sélectionner un étudiant</option>
+                                        @foreach ($students ?? [] as $student)
+                                            <option value="{{ $student->id }}"
+                                                {{ $payment->student_id == $student->id ? 'selected' : '' }}>
+                                                {{ $student->user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Type de paiement -->
+                                <div>
+                                    <label for="payment_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Type de paiement *
+                                    </label>
+                                    <select name="payment_type" id="payment_type"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required>
+                                        <option value="inscription"
+                                            {{ $payment->payment_type == 'inscription' ? 'selected' : '' }}>Inscription
+                                        </option>
+                                        <option value="scolarite"
+                                            {{ $payment->payment_type == 'scolarite' ? 'selected' : '' }}>Scolarité
+                                        </option>
+                                        <option value="cantine"
+                                            {{ $payment->payment_type == 'cantine' ? 'selected' : '' }}>Cantine</option>
+                                        <option value="transport"
+                                            {{ $payment->payment_type == 'transport' ? 'selected' : '' }}>Transport
+                                        </option>
+                                        <option value="autre" {{ $payment->payment_type == 'autre' ? 'selected' : '' }}>
+                                            Autre</option>
+                                    </select>
+                                </div>
+
+                                <!-- Période -->
+                                <div>
+                                    <label for="period" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Période
+                                    </label>
+                                    <input type="text" name="period" id="period"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Ex: Septembre 2024, Trimestre 1..." value="{{ $payment->period }}">
+                                </div>
+
+                                <!-- Montant -->
+                                <div>
+                                    <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Montant (DH) *
+                                    </label>
+                                    <input type="number" name="amount" id="amount"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        step="0.01" min="0" required value="{{ $payment->amount }}">
+                                </div>
+
+                                <!-- Année académique -->
+                                <div>
+                                    <label for="academic_year" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Année académique *
+                                    </label>
+                                    <input type="text" name="academic_year" id="academic_year"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required value="{{ $payment->academic_year }}">
+                                </div>
+
+                                <!-- Date d'échéance -->
+                                <div>
+                                    <label for="due_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Date d'échéance *
+                                    </label>
+                                    <input type="date" name="due_date" id="due_date"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                        value="{{ is_string($payment->due_date) ? $payment->due_date : $payment->due_date->format('Y-m-d') }}">
+                                </div>
+
+                                <!-- Statut -->
+                                <div>
+                                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Statut *
+                                    </label>
+                                    <select name="status" id="status"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required>
+                                        <option value="pending" {{ $payment->status == 'pending' ? 'selected' : '' }}>En
+                                            attente</option>
+                                        <option value="paid" {{ $payment->status == 'paid' ? 'selected' : '' }}>Payé
+                                        </option>
+                                        <option value="overdue" {{ $payment->status == 'overdue' ? 'selected' : '' }}>En
+                                            retard</option>
+                                        <option value="cancelled" {{ $payment->status == 'cancelled' ? 'selected' : '' }}>
+                                            Annulé</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="mt-6">
+                                <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Notes
+                                </label>
+                                <textarea name="notes" id="notes"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="3"
+                                    placeholder="Notes du paiement...">{{ $payment->notes }}</textarea>
+                            </div>
+
+                            <div class="flex justify-end space-x-3 mt-8">
+                                <button type="button" onclick="closeEditModal()"
+                                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                                    Annuler
+                                </button>
+                                <button type="submit"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center">
+                                    <i class="fas fa-save mr-2"></i>Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endif
 
         <!-- Modal pour marquer comme payé -->
         @if ($payment->status === 'pending' || $payment->status === 'overdue')
@@ -331,18 +518,37 @@
     </div>
 
     <script>
+        // Fonctions pour le modal d'édition
+        function openEditModal() {
+            document.getElementById('editModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Fonctions pour le modal de paiement
         function openPayModal() {
             document.getElementById('payModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
 
         function closePayModal() {
             document.getElementById('payModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
 
-        // Fermer le modal en cliquant à l'extérieur
+        // Fermer les modals en cliquant à l'extérieur
         window.onclick = function(event) {
-            const modal = document.getElementById('payModal');
-            if (event.target === modal) {
+            const editModal = document.getElementById('editModal');
+            const payModal = document.getElementById('payModal');
+
+            if (event.target === editModal) {
+                closeEditModal();
+            }
+            if (event.target === payModal) {
                 closePayModal();
             }
         }
@@ -350,8 +556,103 @@
         // Fermer avec Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
+                closeEditModal();
                 closePayModal();
             }
         });
+
+        // Validation du formulaire d'édition
+        document.addEventListener('DOMContentLoaded', function() {
+            const editForm = document.querySelector('#editModal form');
+            if (editForm) {
+                editForm.addEventListener('submit', function(e) {
+                    const amount = editForm.querySelector('[name="amount"]');
+                    const dueDate = editForm.querySelector('[name="due_date"]');
+                    const parentId = editForm.querySelector('[name="parent_id"]');
+
+                    // Validation du parent
+                    if (!parentId.value) {
+                        e.preventDefault();
+                        alert('Veuillez sélectionner un parent.');
+                        parentId.focus();
+                        return;
+                    }
+
+                    // Validation du montant
+                    if (amount && (parseFloat(amount.value) <= 0 || isNaN(parseFloat(amount.value)))) {
+                        e.preventDefault();
+                        alert('Veuillez saisir un montant valide supérieur à 0.');
+                        amount.focus();
+                        return;
+                    }
+
+                    // Validation de la date
+                    if (dueDate && !dueDate.value) {
+                        e.preventDefault();
+                        alert('Veuillez sélectionner une date d\'échéance.');
+                        dueDate.focus();
+                        return;
+                    }
+                });
+            }
+
+            // Validation du formulaire de paiement
+            const payForm = document.querySelector('#payModal form');
+            if (payForm) {
+                payForm.addEventListener('submit', function(e) {
+                    const paymentMethod = payForm.querySelector('[name="payment_method"]');
+
+                    if (!paymentMethod.value) {
+                        e.preventDefault();
+                        alert('Veuillez sélectionner une méthode de paiement.');
+                        paymentMethod.focus();
+                        return;
+                    }
+                });
+            }
+
+            // Auto-formatage du montant
+            const amountInput = document.querySelector('[name="amount"]');
+            if (amountInput) {
+                amountInput.addEventListener('input', function(e) {
+                    let value = e.target.value;
+                    // Remplacer la virgule par un point pour la validation numérique
+                    e.target.value = value.replace(',', '.');
+                });
+            }
+        });
     </script>
+
+    <style>
+        /* Animations pour les modals */
+        .modal-content {
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+        }
+
+        .modal-content.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Amélioration de l'accessibilité */
+        button:focus,
+        select:focus,
+        input:focus,
+        textarea:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        /* Responsive pour les modals */
+        @media (max-width: 768px) {
+            #editModal .relative {
+                width: 95% !important;
+                max-width: none !important;
+                margin: 20px auto;
+                top: 20px !important;
+            }
+        }
+    </style>
 @endsection

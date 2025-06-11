@@ -23,7 +23,6 @@ class SubjectController extends Controller
         $subjects = Subject::with(['teacher.user', 'teachers.user'])->latest()->paginate(10);
         
         return view('backend.subjects.index', compact('subjects'));
-
     }
 
     /**
@@ -55,13 +54,15 @@ class SubjectController extends Controller
             'additional_teachers.*' => 'exists:teachers,id'
         ]);
 
-        Subject::create([
+        // Créer la matière
+        $subject = Subject::create([
             'name'          => $request->name,
             'slug'          => Str::slug($request->name),
             'subject_code'  => $request->subject_code,
             'teacher_id'    => $request->teacher_id,
             'description'   => $request->description
         ]);
+
         // Attacher les enseignants additionnels si présents
         if ($request->has('additional_teachers')) {
             $additionalTeachers = array_filter($request->additional_teachers, function($teacherId) use ($request) {
@@ -84,7 +85,6 @@ class SubjectController extends Controller
      */
     public function show(Subject $subject)
     {
-        //
         $subject->load(['teacher.user', 'teachers.user']);
         
         return view('backend.subjects.show', compact('subject'));
@@ -161,145 +161,143 @@ class SubjectController extends Controller
     }
 
     /**
- * Télécharger le modèle de fichier d'import pour les matières
- */
-public function downloadTemplate($type = 'excel')
-{
-    try {
-        if ($type === 'csv') {
-            $filename = 'modele_import_matieres.csv';
-            $headers = [
-                'nom',
-                'code_matiere',
-                'description',
-                'email_enseignant',
-                'emails_enseignants_additionnels'
-            ];
+     * Télécharger le modèle de fichier d'import pour les matières
+     */
+    public function downloadTemplate($type = 'excel')
+    {
+        try {
+            if ($type === 'csv') {
+                $filename = 'modele_import_matieres.csv';
+                $headers = [
+                    'nom',
+                    'code_matiere',
+                    'description',
+                    'email_enseignant',
+                    'emails_enseignants_additionnels'
+                ];
 
-            // Créer le contenu CSV
-            $csvContent = implode(',', $headers) . "\n";
-            
-            // Ajouter des exemples de données
-            $examples = [
-                [
-                    'Mathématiques',
-                    '101',
-                    'Cours de mathématiques générales couvrant l\'algèbre, la géométrie et les statistiques de base',
-                    'ahmed.bennani@enseignant.ma',
-                    'fatima.elamrani@enseignant.ma,mohammed.tazi@enseignant.ma'
-                ],
-                [
-                    'Physique',
-                    '102',
-                    'Cours de physique fondamentale incluant la mécanique, l\'électricité et l\'optique',
-                    'fatima.elamrani@enseignant.ma',
-                    'ahmed.bennani@enseignant.ma'
-                ],
-                [
-                    'Français',
-                    '201',
-                    'Cours de français : grammaire, littérature, expression écrite et orale',
-                    'mohammed.tazi@enseignant.ma',
-                    ''
-                ]
-            ];
+                // Créer le contenu CSV
+                $csvContent = implode(',', $headers) . "\n";
+                
+                // Ajouter des exemples de données
+                $examples = [
+                    [
+                        'Mathématiques',
+                        '101',
+                        'Cours de mathématiques générales couvrant l\'algèbre, la géométrie et les statistiques de base',
+                        'ahmed.bennani@enseignant.ma',
+                        'fatima.elamrani@enseignant.ma,mohammed.tazi@enseignant.ma'
+                    ],
+                    [
+                        'Physique',
+                        '102',
+                        'Cours de physique fondamentale incluant la mécanique, l\'électricité et l\'optique',
+                        'fatima.elamrani@enseignant.ma',
+                        'ahmed.bennani@enseignant.ma'
+                    ],
+                    [
+                        'Français',
+                        '201',
+                        'Cours de français : grammaire, littérature, expression écrite et orale',
+                        'mohammed.tazi@enseignant.ma',
+                        ''
+                    ]
+                ];
 
-            foreach ($examples as $example) {
-                $csvContent .= '"' . implode('","', $example) . '"' . "\n";
+                foreach ($examples as $example) {
+                    $csvContent .= '"' . implode('","', $example) . '"' . "\n";
+                }
+                
+                return response($csvContent)
+                    ->header('Content-Type', 'text/csv; charset=UTF-8')
+                    ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                    ->header('Content-Length', strlen($csvContent));
+                    
+            } else {
+                // Pour Excel
+                return Excel::download(new SubjectsTemplateExport(), 'modele_import_matieres.xlsx');
             }
             
-            return response($csvContent)
-                ->header('Content-Type', 'text/csv; charset=UTF-8')
-                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
-                ->header('Content-Length', strlen($csvContent));
-                
-        } else {
-            // Pour Excel
-            return Excel::download(new SubjectsTemplateExport(), 'modele_import_matieres.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('Erreur téléchargement template matières: ' . $e->getMessage());
+            
+            return redirect()->back()->with('error', 'Erreur lors du téléchargement du modèle: ' . $e->getMessage());
         }
-        
-    } catch (\Exception $e) {
-        \Log::error('Erreur téléchargement template matières: ' . $e->getMessage());
-        
-        return redirect()->back()->with('error', 'Erreur lors du téléchargement du modèle: ' . $e->getMessage());
     }
-}
 
-/**
- * Importer les matières en lot
- */
-public function bulkImport(Request $request)
-{
-    try {
-        // Validation du fichier
-        $validator = Validator::make($request->all(), [
-            'import_file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
-        ]);
+    /**
+     * Importer les matières en lot
+     */
+    public function bulkImport(Request $request)
+    {
+        try {
+            // Validation du fichier
+            $validator = Validator::make($request->all(), [
+                'import_file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
+            ]);
 
-        if ($validator->fails()) {
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Fichier invalide. Veuillez vérifier le format et la taille.',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $file = $request->file('import_file');
+            
+            // Créer une instance d'import personnalisée
+            $import = new SubjectsImport();
+            
+            // Importer le fichier
+            Excel::import($import, $file);
+            
+            // Récupérer les résultats
+            $results = $import->getResults();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Import terminé avec succès',
+                'total' => $results['total'],
+                'success' => $results['success'],
+                'errors' => $results['errors'],
+                'errorDetails' => $results['errorDetails']
+            ]);
+
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errorDetails = [];
+            
+            foreach ($failures as $failure) {
+                $errorDetails[] = [
+                    'ligne' => $failure->row(),
+                    'erreur' => implode(', ', $failure->errors())
+                ];
+            }
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Fichier invalide. Veuillez vérifier le format et la taille.',
-                'errors' => $validator->errors()
+                'message' => 'Erreurs de validation dans le fichier',
+                'total' => count($failures),
+                'success' => 0,
+                'errors' => count($failures),
+                'errorDetails' => $errorDetails
             ], 422);
-        }
-
-        $file = $request->file('import_file');
-        
-        // Créer une instance d'import personnalisée
-        $import = new SubjectsImport();
-        
-        // Importer le fichier
-        Excel::import($import, $file);
-        
-        // Récupérer les résultats
-        $results = $import->getResults();
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Import terminé avec succès',
-            'total' => $results['total'],
-            'success' => $results['success'],
-            'errors' => $results['errors'],
-            'errorDetails' => $results['errorDetails']
-        ]);
-
-    } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-        $failures = $e->failures();
-        $errorDetails = [];
-        
-        foreach ($failures as $failure) {
-            $errorDetails[] = [
-                'ligne' => $failure->row(),
-                'erreur' => implode(', ', $failure->errors())
-            ];
-        }
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Erreurs de validation dans le fichier',
-            'total' => count($failures),
-            'success' => 0,
-            'errors' => count($failures),
-            'errorDetails' => $errorDetails
-        ], 422);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Erreur lors de l\'importation: ' . $e->getMessage(),
-            'total' => 0,
-            'success' => 0,
-            'errors' => 1,
-            'errorDetails' => [
-                [
-                    'ligne' => 'Système',
-                    'erreur' => $e->getMessage()
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'importation: ' . $e->getMessage(),
+                'total' => 0,
+                'success' => 0,
+                'errors' => 1,
+                'errorDetails' => [
+                    [
+                        'ligne' => 'Système',
+                        'erreur' => $e->getMessage()
+                    ]
                 ]
-            ]
-        ], 500);
+            ], 500);
+        }
     }
-}
-
-    
 }

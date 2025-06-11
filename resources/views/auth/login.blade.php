@@ -86,9 +86,18 @@
                         </label>
                     </div>
                     <div class="text-sm">
-                        <a href="#" class="font-medium text-blue-600 hover:text-blue-500 transition-colors">
-                            Mot de passe oublié?
-                        </a>
+                        @if (Route::has('password.request'))
+                            <a href="{{ route('password.request') }}"
+                                class="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200 inline-flex items-center group">
+                                <svg class="w-4 h-4 mr-1 group-hover:scale-110 transition-transform" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                                    </path>
+                                </svg>
+                                Mot de passe oublié?
+                            </a>
+                        @endif
                     </div>
                 </div>
 

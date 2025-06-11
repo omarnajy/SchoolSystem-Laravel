@@ -18,7 +18,7 @@
                         </div>
                         <div>
                             <h1 class="text-3xl font-bold text-gray-900">Nouvelle classe</h1>
-                            <p class="text-gray-600 mt-1">Créer une nouvelle classe et assigner un professeur</p>
+                            <p class="text-gray-600 mt-1">Créer une nouvelle classe et assigner des enseignants</p>
                         </div>
                     </div>
 
@@ -112,31 +112,63 @@
                             @enderror
                         </div>
 
-                        <!-- Teacher Assignment -->
+                        <!-- Enseignants de la classe -->
                         <div class="group">
-                            <label for="teacher_id" class="block text-sm font-semibold text-gray-700 mb-3">
-                                Professeur principal
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <svg class="w-5 h-5 inline-block mr-2 text-violet-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Enseignants de la classe
                             </label>
-                            <div class="relative">
-                                <select name="teacher_id" id="teacher_id"
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white appearance-none @error('teacher_id') border-red-300 bg-red-50 @enderror">
-                                    <option value="">-- Sélectionner un professeur --</option>
-                                    @foreach ($teachers as $teacher)
-                                        <option value="{{ $teacher->id }}"
-                                            {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
-                                            {{ $teacher->user->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </div>
+                            <p class="text-sm text-gray-500 mb-4">
+                                Sélectionnez les enseignants qui sont assignés à cette classe.
+                                <span class="font-medium text-amber-600">Note :</span> Cela ne détermine pas
+                                automatiquement les matières qu'ils enseignent.
+                            </p>
+
+                            <div
+                                class="space-y-3 max-h-64 overflow-y-auto border border-gray-200 rounded-2xl p-4 bg-gray-50">
+                                @foreach ($teachers as $teacher)
+                                    <label
+                                        class="flex items-center space-x-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-violet-300 hover:shadow-sm transition-all duration-200 cursor-pointer group">
+                                        <input type="checkbox" name="teacher_ids[]" value="{{ $teacher->id }}"
+                                            {{ in_array($teacher->id, old('teacher_ids', [])) ? 'checked' : '' }}
+                                            class="h-5 w-5 text-violet-600 focus:ring-violet-500 border-gray-300 rounded transition-colors">
+
+                                        <div
+                                            class="w-10 h-10 bg-gradient-to-r from-violet-400 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                                            {{ strtoupper(substr($teacher->user->name, 0, 2)) }}
+                                        </div>
+
+                                        <div class="flex-1">
+                                            <p
+                                                class="font-semibold text-gray-800 group-hover:text-violet-700 transition-colors">
+                                                {{ $teacher->user->name }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                {{ $teacher->user->email }}
+                                            </p>
+                                            @if ($teacher->subjects->count() > 0)
+                                                <p class="text-xs text-gray-400 mt-1">
+                                                    Matières : {{ $teacher->subjects->pluck('name')->join(', ') }}
+                                                </p>
+                                            @endif
+                                        </div>
+
+                                        <div class="text-xs text-gray-400">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                    </label>
+                                @endforeach
                             </div>
-                            @error('teacher_id')
+
+                            @error('teacher_ids')
                                 <p class="mt-2 text-sm text-red-600 flex items-center">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -146,9 +178,29 @@
                                     {{ $message }}
                                 </p>
                             @enderror
-                            <p class="mt-2 text-sm text-gray-500">
-                                Le professeur principal sera responsable de cette classe
-                            </p>
+                        </div>
+
+                        <!-- Actions rapides pour les enseignants -->
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Actions rapides</h4>
+                            <div class="flex flex-wrap gap-3">
+                                <button type="button" onclick="selectAllTeachers()"
+                                    class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Sélectionner tous
+                                </button>
+                                <button type="button" onclick="unselectAllTeachers()"
+                                    class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Désélectionner tous
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Class Description -->
@@ -225,6 +277,67 @@
                     </div>
                 </div>
             </div>
+            <!-- Informations importantes -->
+            <div class="mt-8 bg-blue-50 rounded-xl p-6 border border-blue-200">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-sm font-semibold text-blue-800">Important à retenir</h3>
+                        <ul class="mt-2 text-sm text-blue-700 space-y-1">
+                            <li>• <strong>Enseignants de classe :</strong> Les enseignants sélectionnés sont assignés à
+                                cette classe
+                                mais cela ne définit pas automatiquement quelles matières ils enseignent</li>
+                            <li>• <strong>Attribution des matières :</strong> Après création, vous devrez assigner les
+                                matières avec
+                                leurs enseignants respectifs</li>
+                            <li>• <strong>Flexibilité :</strong> Une matière peut être enseignée par plusieurs enseignants
+                            </li>
+                            <li>• <strong>Gestion séparée :</strong> L'assignation d'enseignants et l'assignation de
+                                matières sont
+                                deux étapes distinctes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script>
+        function selectAllTeachers() {
+            document.querySelectorAll('input[name="teacher_ids[]"]').forEach(checkbox => {
+                checkbox.checked = true;
+                checkbox.closest('label').classList.add('border-violet-500', 'bg-violet-50');
+                checkbox.closest('label').classList.remove('border-gray-100');
+            });
+        }
+
+        function unselectAllTeachers() {
+            document.querySelectorAll('input[name="teacher_ids[]"]').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('label').classList.remove('border-violet-500', 'bg-violet-50');
+                checkbox.closest('label').classList.add('border-gray-100');
+            });
+        }
+
+        // Dynamic styling on checkbox change
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[name="teacher_ids[]"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const label = this.closest('label');
+                    if (this.checked) {
+                        label.classList.add('border-violet-500', 'bg-violet-50');
+                        label.classList.remove('border-gray-100');
+                    } else {
+                        label.classList.remove('border-violet-500', 'bg-violet-50');
+                        label.classList.add('border-gray-100');
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

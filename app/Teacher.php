@@ -30,6 +30,25 @@ class Teacher extends Model
         return $this->hasMany(Grade::class);
     }
 
+    public function allClasses()
+    {
+        return $this->belongsToMany(Grade::class, 'grade_teacher')
+                   ->withPivot('is_main_teacher')
+                   ->withTimestamps();
+    }
+
+    public function mainClasses()
+    {
+        return $this->belongsToMany(Grade::class, 'grade_teacher')
+                   ->wherePivot('is_main_teacher', true);
+    }
+
+    public function secondaryClasses()
+    {
+        return $this->belongsToMany(Grade::class, 'grade_teacher')
+                   ->wherePivot('is_main_teacher', false);
+    }
+
     public function students() 
     {
         return $this->classes()->withCount('students');

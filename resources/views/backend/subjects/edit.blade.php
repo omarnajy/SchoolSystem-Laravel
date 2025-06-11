@@ -249,27 +249,53 @@
                                         </svg>
                                         Enseignant Assigné
                                     </label>
-                                    <div class="relative">
-                                        <select name="teacher_id"
-                                            class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-200 transition-all duration-300 font-medium text-lg appearance-none cursor-pointer">
-                                            <option value="" class="text-gray-500">-- Sélectionner un enseignant --
-                                            </option>
-                                            @foreach ($teachers as $teacher)
-                                                <option value="{{ $teacher->id }}" class="text-gray-800"
-                                                    {{ $teacher->id === $subject->teacher_id ? 'selected' : '' }}>
-                                                    {{ $teacher->user->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
+                                    <div
+                                        class="space-y-3 max-h-64 overflow-y-auto border border-gray-200 rounded-2xl p-4 bg-gray-50">
+                                        @foreach ($teachers as $teacher)
+                                            <label
+                                                class="flex items-center space-x-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-indigo-300 hover:shadow-sm transition-all duration-200 cursor-pointer group">
+                                                <input type="checkbox" name="teacher_ids[]" value="{{ $teacher->id }}"
+                                                    {{ in_array($teacher->id, $subject->teachers->pluck('id')->toArray()) ? 'checked' : '' }}
+                                                    class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-colors">
+
+                                                <!-- Avatar de l'enseignant -->
+                                                <div
+                                                    class="w-10 h-10 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                                                    {{ strtoupper(substr($teacher->user->name, 0, 2)) }}
+                                                </div>
+
+                                                <div class="flex-1">
+                                                    <p
+                                                        class="font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors">
+                                                        {{ $teacher->user->name }}
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">
+                                                        {{ $teacher->user->email }}
+                                                    </p>
+                                                </div>
+
+                                                <!-- Badge pour enseignant principal -->
+                                                @if ($teacher->id === $subject->teacher_id)
+                                                    <div
+                                                        class="px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-lg">
+                                                        Principal
+                                                    </div>
+                                                @endif
+
+                                                <!-- Icône de sélection -->
+                                                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <svg class="w-5 h-5 text-indigo-500" fill="currentColor"
+                                                        viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                            clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            </label>
+                                        @endforeach
                                     </div>
-                                    @error('teacher_id')
+
+                                    @error('teacher_ids')
                                         <p class="text-red-500 text-sm flex items-center mt-2">
                                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd"
@@ -279,6 +305,40 @@
                                             {{ $message }}
                                         </p>
                                     @enderror
+                                </div>
+                                <!-- Affichage des enseignants actuellement assignés -->
+                                <div
+                                    class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                                    <h5 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Enseignants Actuellement Assignés
+                                    </h5>
+
+                                    @if ($subject->teachers && $subject->teachers->count() > 0)
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach ($subject->teachers as $assignedTeacher)
+                                                <div
+                                                    class="inline-flex items-center px-3 py-2 bg-white border border-blue-200 rounded-xl shadow-sm">
+                                                    <div
+                                                        class="w-6 h-6 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xs mr-2">
+                                                        {{ strtoupper(substr($assignedTeacher->user->name, 0, 2)) }}
+                                                    </div>
+                                                    <span
+                                                        class="font-semibold text-gray-800">{{ $assignedTeacher->user->name }}</span>
+                                                    @if ($assignedTeacher->id === $subject->teacher_id)
+                                                        <span
+                                                            class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded">Principal</span>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <p class="text-gray-500 italic">Aucun enseignant assigné actuellement</p>
+                                    @endif
                                 </div>
                             </div>
                         </div>

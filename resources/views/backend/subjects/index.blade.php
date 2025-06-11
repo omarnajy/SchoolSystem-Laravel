@@ -1068,15 +1068,15 @@
         </div>
 
         ${errorCount > 0 && errorDetails.length > 0 ? `
-                <div class="bg-white rounded-xl p-4 border border-red-200">
-                    <h5 class="font-bold text-red-600 mb-3 flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                        Détail des erreurs
-                    </h5>
-                    <div class="space-y-2">
-                        ${errorDetails.map(error => `
+                        <div class="bg-white rounded-xl p-4 border border-red-200">
+                            <h5 class="font-bold text-red-600 mb-3 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                                Détail des erreurs
+                            </h5>
+                            <div class="space-y-2">
+                                ${errorDetails.map(error => `
                         <div class="flex items-start p-3 bg-red-50 rounded-lg">
                             <span class="inline-flex items-center px-2 py-1 bg-red-200 text-red-800 text-xs font-bold rounded-full mr-3">
                                 Ligne ${error.ligne || error.row || 'N/A'}
@@ -1084,9 +1084,9 @@
                             <span class="text-sm text-red-700">${error.erreur || error.message || error}</span>
                         </div>
                     `).join('')}
-                    </div>
-                </div>
-            ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
 
         <div class="flex justify-end space-x-4 mt-6">
             <button onclick="closeSubjectModal()" class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">

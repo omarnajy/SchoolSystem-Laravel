@@ -247,26 +247,45 @@
                                         </svg>
                                         Enseignant Assigné
                                     </label>
-                                    <div class="relative">
-                                        <select name="teacher_id"
-                                            class="w-full px-6 py-4 bg-white border-2 border-gray-200 rounded-2xl focus:border-green-500 focus:ring-4 focus:ring-green-200 transition-all duration-300 font-medium text-lg appearance-none cursor-pointer">
-                                            <option value="" class="text-gray-500">-- Sélectionner un enseignant --
-                                            </option>
-                                            @foreach ($teachers as $teacher)
-                                                <option value="{{ $teacher->id }}" class="text-gray-800">
-                                                    {{ $teacher->user->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
+                                    <!-- Liste déroulante des enseignants -->
+                                    <div
+                                        class="space-y-3 max-h-64 overflow-y-auto border border-gray-200 rounded-2xl p-4 bg-gray-50">
+                                        @foreach ($teachers as $teacher)
+                                            <label
+                                                class="flex items-center space-x-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-green-300 hover:shadow-sm transition-all duration-200 cursor-pointer group">
+                                                <input type="checkbox" name="teacher_ids[]" value="{{ $teacher->id }}"
+                                                    class="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded transition-colors">
+
+                                                <!-- Avatar de l'enseignant -->
+                                                <div
+                                                    class="w-10 h-10 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                                                    {{ strtoupper(substr($teacher->user->name, 0, 2)) }}
+                                                </div>
+
+                                                <div class="flex-1">
+                                                    <p
+                                                        class="font-semibold text-gray-800 group-hover:text-green-700 transition-colors">
+                                                        {{ $teacher->user->name }}
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">
+                                                        {{ $teacher->user->email }}
+                                                    </p>
+                                                </div>
+
+                                                <!-- Badge optionnel -->
+                                                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <svg class="w-5 h-5 text-green-500" fill="currentColor"
+                                                        viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                            clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            </label>
+                                        @endforeach
                                     </div>
-                                    @error('teacher_id')
+
+                                    @error('teacher_ids')
                                         <p class="text-red-500 text-sm flex items-center mt-2">
                                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd"
@@ -336,3 +355,103 @@
         </div>
     </div>
 @endsection
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const teacherSearch = document.getElementById('teacherSearch');
+            const teacherDropdown = document.getElementById('teacherDropdown');
+            const selectedTeachers = document.getElementById('selectedTeachers');
+            const hiddenInputs = document.getElementById('hiddenInputs');
+            const teacherOptions = document.querySelectorAll('.teacher-option');
+
+            let selectedTeacherIds = [];
+
+            // Afficher/masquer la liste déroulante
+            teacherSearch.addEventListener('focus', () => {
+                teacherDropdown.classList.remove('hidden');
+                filterTeachers();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!document.getElementById('teacherSelector').contains(e.target)) {
+                    teacherDropdown.classList.add('hidden');
+                }
+            });
+
+            // Filtrer les enseignants lors de la recherche
+            teacherSearch.addEventListener('input', filterTeachers);
+
+            function filterTeachers() {
+                const searchTerm = teacherSearch.value.toLowerCase();
+                teacherOptions.forEach(option => {
+                    const name = option.dataset.name.toLowerCase();
+                    const email = option.dataset.email.toLowerCase();
+                    const isVisible = name.includes(searchTerm) || email.includes(searchTerm);
+                    const isSelected = selectedTeacherIds.includes(option.dataset.id);
+
+                    option.style.display = (isVisible && !isSelected) ? 'flex' : 'none';
+                });
+            }
+
+            // Sélectionner un enseignant
+            teacherOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const id = option.dataset.id;
+                    const name = option.dataset.name;
+
+                    if (!selectedTeacherIds.includes(id)) {
+                        selectedTeacherIds.push(id);
+                        addTeacherTag(id, name);
+                        addHiddenInput(id);
+                        filterTeachers();
+                        teacherSearch.value = '';
+                    }
+                });
+            });
+
+            function addTeacherTag(id, name) {
+                const tag = document.createElement('div');
+                tag.className =
+                    'inline-flex items-center px-3 py-2 bg-gradient-to-r from-green-100 to-emerald-100 border border-green-300 rounded-xl text-sm font-semibold text-green-800';
+                tag.innerHTML = `
+                <span>${name}</span>
+                <button type="button" class="ml-2 text-green-600 hover:text-green-800 focus:outline-none" onclick="removeTeacher('${id}')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            `;
+                tag.setAttribute('data-teacher-id', id);
+
+                // Insérer avant l'input de recherche
+                selectedTeachers.insertBefore(tag, teacherSearch);
+            }
+
+            function addHiddenInput(id) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'teacher_ids[]';
+                input.value = id;
+                input.setAttribute('data-teacher-id', id);
+                hiddenInputs.appendChild(input);
+            }
+
+            // Fonction globale pour supprimer un enseignant
+            window.removeTeacher = function(id) {
+                // Supprimer de la liste
+                selectedTeacherIds = selectedTeacherIds.filter(teacherId => teacherId !== id);
+
+                // Supprimer le tag
+                const tag = selectedTeachers.querySelector(`[data-teacher-id="${id}"]`);
+                if (tag) tag.remove();
+
+                // Supprimer l'input caché
+                const input = hiddenInputs.querySelector(`[data-teacher-id="${id}"]`);
+                if (input) input.remove();
+
+                // Rafraîchir la liste
+                filterTeachers();
+            };
+        });
+    </script>
+@endpush

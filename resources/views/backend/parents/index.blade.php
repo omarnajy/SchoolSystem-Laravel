@@ -671,6 +671,7 @@
     <!-- Include Delete Modal -->
     @include('backend.modals.delete', ['name' => 'parent'])
 
+
     <style>
         .pagination-wrapper .pagination {
             display: flex;
@@ -730,7 +731,8 @@
             transition: width 0.3s ease;
         }
     </style>
-
+@endsection
+@push('scripts')
     <script>
         // Modal delete functionality
         function openDeleteModal(url, name) {
@@ -768,5 +770,351 @@
                 $("#deletemodal").addClass("hidden");
             });
         });
+        // Variables globales pour les parents
+        let selectedParentFile = null;
+
+        // Éléments DOM pour les parents
+        const parentModal = document.getElementById('parentBulkImportModal');
+        const openParentBtn = document.getElementById('openParentBulkImport');
+        const closeParentBtns = [
+            document.getElementById('closeParentBulkImport'),
+            document.getElementById('parentCloseModalFooter')
+        ];
+        const parentFileDropArea = document.getElementById('parentFileDropArea');
+        const parentFileInput = document.getElementById('parentFileInput');
+        const parentFileInfo = document.getElementById('parentFileInfo');
+        const parentFileName = document.getElementById('parentFileName');
+        const parentFileSize = document.getElementById('parentFileSize');
+        const parentRemoveFileBtn = document.getElementById('parentRemoveFile');
+        const parentStartImportBtn = document.getElementById('parentStartImport');
+        const parentCancelImportBtn = document.getElementById('parentCancelImport');
+        const parentProgressSection = document.getElementById('parentProgressSection');
+        const parentProgressBar = document.getElementById('parentProgressBar');
+        const parentProgressText = document.getElementById('parentProgressText');
+        const parentResultsSection = document.getElementById('parentResultsSection');
+        const parentImportResults = document.getElementById('parentImportResults');
+
+        // Fonction pour formater la taille des fichiers
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Fonction pour réinitialiser le formulaire
+        function resetParentForm() {
+            selectedParentFile = null;
+            if (parentFileInput) parentFileInput.value = '';
+            if (parentFileInfo) parentFileInfo.classList.add('hidden');
+            if (parentStartImportBtn) parentStartImportBtn.disabled = true;
+            if (parentProgressSection) parentProgressSection.classList.add('hidden');
+            if (parentResultsSection) parentResultsSection.classList.add('hidden');
+            if (parentProgressBar) parentProgressBar.style.width = '0%';
+            if (parentProgressText) parentProgressText.textContent = '';
+            if (parentImportResults) parentImportResults.innerHTML = '';
+            updateParentStep(1, false);
+        }
+
+        // Ouvrir le modal des parents
+        if (openParentBtn) {
+            openParentBtn.addEventListener('click', function() {
+                parentModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        // Fermer le modal des parents
+        closeParentBtns.forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', closeParentModal);
+            }
+        });
+
+        if (parentCancelImportBtn) {
+            parentCancelImportBtn.addEventListener('click', closeParentModal);
+        }
+
+        function closeParentModal() {
+            parentModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            resetParentForm();
+        }
+
+        // Fermer en cliquant en dehors
+        if (parentModal) {
+            parentModal.addEventListener('click', function(e) {
+                if (e.target === parentModal) {
+                    closeParentModal();
+                }
+            });
+        }
+
+        // Gestion du drag & drop pour les parents
+        if (parentFileDropArea) {
+            parentFileDropArea.addEventListener('click', () => parentFileInput.click());
+
+            parentFileDropArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+
+            parentFileDropArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+
+            parentFileDropArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleParentFileSelect(files[0]);
+                }
+            });
+        }
+
+        if (parentFileInput) {
+            parentFileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    handleParentFileSelect(e.target.files[0]);
+                }
+            });
+        }
+
+        // Gérer la sélection de fichier pour les parents
+        function handleParentFileSelect(file) {
+            // Vérifier le type de fichier
+            const allowedTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+                'text/csv'
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert('Type de fichier non supporté. Veuillez sélectionner un fichier Excel (.xlsx, .xls) ou CSV.');
+                return;
+            }
+
+            // Vérifier la taille (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Le fichier est trop volumineux. Taille maximale: 10MB');
+                return;
+            }
+
+            selectedParentFile = file;
+            parentFileName.textContent = file.name;
+            parentFileSize.textContent = formatFileSize(file.size);
+
+            parentFileInfo.classList.remove('hidden');
+            parentStartImportBtn.disabled = false;
+
+            // Mettre à jour les étapes
+            updateParentStep(1, true);
+        }
+
+        // Supprimer le fichier sélectionné
+        if (parentRemoveFileBtn) {
+            parentRemoveFileBtn.addEventListener('click', function() {
+                selectedParentFile = null;
+                parentFileInput.value = '';
+                parentFileInfo.classList.add('hidden');
+                parentStartImportBtn.disabled = true;
+                updateParentStep(1, false);
+            });
+        }
+
+        // Mettre à jour les étapes pour les parents
+        function updateParentStep(stepNumber, completed) {
+            const steps = document.querySelectorAll('#parentBulkImportModal .step');
+            const progressBars = document.querySelectorAll('[class*="parentStep"][class*="-progress"]');
+
+            steps.forEach((step, index) => {
+                const stepNum = index + 1;
+                const circle = step.querySelector('div');
+                const text = step.querySelector('span');
+
+                if (stepNum <= stepNumber && completed) {
+                    circle.className =
+                        'w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center font-bold mr-3';
+                    text.className = 'font-semibold text-gray-700';
+
+                    if (stepNum < stepNumber) {
+                        circle.innerHTML =
+                            `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                    } else {
+                        circle.textContent = stepNum;
+                    }
+                } else if (stepNum > stepNumber || !completed) {
+                    circle.className =
+                        'w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold mr-3';
+                    text.className = 'font-semibold text-gray-500';
+                    circle.textContent = stepNum;
+                }
+            });
+
+            // Mettre à jour les barres de progression
+            progressBars.forEach((bar, index) => {
+                const stepNum = index + 1;
+                if (stepNum < stepNumber && completed) {
+                    bar.style.width = '100%';
+                } else {
+                    bar.style.width = '0%';
+                }
+            });
+        }
+
+        // Gérer la soumission du formulaire des parents
+        if (document.getElementById('parentImportForm')) {
+            document.getElementById('parentImportForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!selectedParentFile) return;
+
+                startParentImport();
+            });
+        }
+
+        // Démarrer l'importation des parents
+        function startParentImport() {
+            updateParentStep(2, true);
+            parentProgressSection.classList.remove('hidden');
+            parentStartImportBtn.disabled = true;
+
+            // Faire l'appel AJAX réel
+            const formData = new FormData();
+            formData.append('import_file', selectedParentFile);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+            $.ajax({
+                url: '{{ route('parents.bulk-import') }}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                xhr: function() {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function(evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total * 100;
+                            parentProgressBar.style.width = percentComplete + '%';
+                            parentProgressText.textContent =
+                                `Importation en cours... ${Math.round(percentComplete)}%`;
+                        }
+                    }, false);
+                    return xhr;
+                },
+                success: function(response) {
+                    completeParentImport(response);
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Erreur lors de l\'importation';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    alert(errorMessage);
+                    resetParentForm();
+                }
+            });
+        }
+
+        // Finaliser l'importation des parents
+        function completeParentImport(response) {
+            updateParentStep(3, true);
+            parentProgressSection.classList.add('hidden');
+            parentResultsSection.classList.remove('hidden');
+
+            // Utiliser les vraies données de la réponse serveur
+            showParentImportResults(response);
+        }
+
+        // Afficher les résultats d'importation des parents
+        function showParentImportResults(results) {
+            const successCount = results.success || 0;
+            const errorCount = results.errors || 0;
+            const totalCount = results.total || 0;
+            const errorDetails = results.errorDetails || [];
+
+            const resultsHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-4 border border-green-200">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-green-600">${successCount}</p>
+                        <p class="text-sm text-gray-600">Parents importés</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 border border-red-200">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-red-600">${errorCount}</p>
+                        <p class="text-sm text-gray-600">Erreurs</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-4 border border-blue-200">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-blue-600">${totalCount}</p>
+                        <p class="text-sm text-gray-600">Total traité</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        ${errorCount > 0 && errorDetails.length > 0 ? `
+                                        <div class="bg-white rounded-xl p-4 border border-red-200">
+                                            <h5 class="font-bold text-red-600 mb-3 flex items-center">
+                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Détail des erreurs
+                                            </h5>
+                                            <div class="space-y-2">
+                                                ${errorDetails.map(error => `
+                        <div class="flex items-start p-3 bg-red-50 rounded-lg">
+                            <span class="inline-flex items-center px-2 py-1 bg-red-200 text-red-800 text-xs font-bold rounded-full mr-3">
+                                Ligne ${error.ligne || error.row || 'N/A'}
+                            </span>
+                            <span class="text-sm text-red-700">${error.erreur || error.message || error}</span>
+                        </div>
+                    `).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+
+        <div class="flex justify-end space-x-4 mt-6">
+            <button onclick="closeParentModal()" class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                Fermer
+            </button>
+            <button onclick="window.location.reload()" class="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 hover:scale-105">
+                <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Actualiser la page
+            </button>
+        </div>
+    `;
+
+            parentImportResults.innerHTML = resultsHTML;
+        }
     </script>
-@endsection
+@endpush

@@ -34,6 +34,15 @@ class Subject extends Model
     }
 
     /**
+     * Relation many-to-many avec les classes (grades)
+     */
+    public function grades()
+    {
+        return $this->belongsToMany(Grade::class, 'grade_subject', 'subject_id', 'grade_id')
+                   ->withTimestamps();
+    }
+
+    /**
      * Relation avec les emplois du temps
      */
     public function schedules()
@@ -55,9 +64,13 @@ class Subject extends Model
             $allTeachers->push($this->teacher);
         }
         
-        // Ajouter les enseignants additionnels
-        $additionalTeachers = $this->teachers()->where('teachers.id', '!=', $this->teacher_id)->get();
-        $allTeachers = $allTeachers->merge($additionalTeachers);
+        // Ajouter les enseignants additionnels (en évitant les doublons)
+        $additionalTeachers = $this->teachers;
+        foreach ($additionalTeachers as $teacher) {
+            if (!$allTeachers->contains('id', $teacher->id)) {
+                $allTeachers->push($teacher);
+            }
+        }
         
         return $allTeachers->unique('id');
     }
@@ -70,5 +83,32 @@ class Subject extends Model
         return Teacher::whereHas('schedules', function($query) {
             $query->where('subject_id', $this->id);
         })->with('user')->get();
+    }
+
+    /**
+     * Obtenir les enseignants qui enseignent cette matière via les horaires
+     */
+    public function getScheduledTeachers()
+    {
+        return Teacher::whereHas('schedules', function($query) {
+            $query->where('subject_id', $this->id);
+        })->with('user')->get();
+    }
+
+    /**
+     * Vérifier si un enseignant peut enseigner cette matière
+     */
+    public function hasTeacher($teacherId)
+    {
+        return $this->teacher_id === $teacherId || 
+               $this->teachers->contains('id', $teacherId);
+    }
+
+    /**
+     * Obtenir les classes où cette matière est enseignée
+     */
+    public function getGrades()
+    {
+        return $this->grades()->with(['teachers', 'students'])->get();
     }
 }

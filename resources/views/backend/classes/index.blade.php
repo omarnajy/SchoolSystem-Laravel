@@ -18,7 +18,7 @@
                         </div>
                         <div>
                             <h1 class="text-3xl font-bold text-gray-900">Gestion des classes</h1>
-                            <p class="text-gray-600 mt-1">Administrer les classes, professeurs et matières</p>
+                            <p class="text-gray-600 mt-1">Administrer les classes, enseignants et matières</p>
                         </div>
                     </div>
 
@@ -79,9 +79,18 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Professeurs actifs</p>
+                            <p class="text-sm font-medium text-gray-600">Enseignants assignés</p>
                             <p class="text-2xl font-bold text-gray-900">
-                                {{ $classes->whereNotNull('teacher_id')->unique('teacher_id')->count() }}</p>
+                                @php
+                                    $uniqueTeachers = collect();
+                                    foreach ($classes as $class) {
+                                        foreach ($class->teachers as $teacher) {
+                                            $uniqueTeachers->push($teacher->id);
+                                        }
+                                    }
+                                @endphp
+                                {{ $uniqueTeachers->unique()->count() }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -175,7 +184,7 @@
                                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
                                             </path>
                                         </svg>
-                                        <span>Professeur</span>
+                                        <span>Enseignants</span>
                                     </div>
                                 </th>
                                 <th scope="col"
@@ -234,7 +243,8 @@
                                         <div class="flex flex-wrap gap-1 justify-center">
                                             @forelse ($class->subjects as $subject)
                                                 <span
-                                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200"
+                                                    title="{{ $subject->name }}">
                                                     {{ $subject->subject_code }}
                                                 </span>
                                             @empty
@@ -246,31 +256,84 @@
                                         </div>
                                     </td>
 
-                                    <!-- Teacher -->
+                                    <!-- Enseignants -->
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if ($class->teacher)
-                                            <div class="flex items-center">
-                                                <div
-                                                    class="h-8 w-8 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center mr-3">
-                                                    <span
-                                                        class="text-white font-semibold text-xs">{{ substr($class->teacher->user->name, 0, 1) }}</span>
-                                                </div>
-                                                <div>
-                                                    <div class="text-sm font-medium text-gray-900">
-                                                        {{ $class->teacher->user->name }}</div>
-                                                    <div class="text-xs text-gray-500">Professeur principal</div>
-                                                </div>
+                                        @php
+                                            // Obtenir tous les enseignants de cette classe
+                                            $allTeachers = $class->getAllTeachers();
+                                        @endphp
+
+                                        @if ($allTeachers->count() > 0)
+                                            <div class="space-y-1">
+                                                @foreach ($allTeachers->take(3) as $teacher)
+                                                    <div class="flex items-center">
+                                                        <div
+                                                            class="h-6 w-6 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center mr-2">
+                                                            <span class="text-white font-semibold text-xs">
+                                                                {{ substr($teacher->user->name, 0, 1) }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="text-sm text-gray-900">
+                                                            {{ $teacher->user->name }}
+                                                        </div>
+
+                                                        @php
+                                                            // Vérifier si cet enseignant est directement assigné ou via une matière
+                                                            $isDirectlyAssigned = $class->teachers->contains(
+                                                                'id',
+                                                                $teacher->id,
+                                                            );
+                                                            $subjectsForTeacher = $class->getSubjectsForTeacher(
+                                                                $teacher->id,
+                                                            );
+                                                        @endphp
+
+                                                        <div class="ml-2">
+                                                            @if ($isDirectlyAssigned && $subjectsForTeacher->count() > 0)
+                                                                <span
+                                                                    class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                                                    title="Enseignant de classe + matières">
+                                                                    <svg class="w-3 h-3" fill="none"
+                                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                                                                        </path>
+                                                                    </svg>
+                                                                </span>
+                                                            @elseif($isDirectlyAssigned)
+                                                                <span
+                                                                    class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                                                                    title="Enseignant de classe">
+                                                                    C
+                                                                </span>
+                                                            @else
+                                                                <span
+                                                                    class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                                                                    title="Enseigne: {{ $subjectsForTeacher->pluck('name')->join(', ') }}">
+                                                                    M
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+
+                                                @if ($allTeachers->count() > 3)
+                                                    <div class="text-xs text-gray-500 ml-8">
+                                                        +{{ $allTeachers->count() - 3 }} autre(s)
+                                                    </div>
+                                                @endif
                                             </div>
                                         @else
                                             <span
                                                 class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.077 16.5c-.77.833.192 2.5 1.732 2.5z">
+                                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z">
                                                     </path>
                                                 </svg>
-                                                Non assigné
+                                                Aucun enseignant
                                             </span>
                                         @endif
                                     </td>
@@ -378,15 +441,14 @@
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-sm font-semibold text-blue-800">Guide de gestion des classes</h3>
+                        <h3 class="text-sm font-semibold text-blue-800">Nouveau système simplifié</h3>
                         <ul class="mt-2 text-sm text-blue-700 space-y-1">
-                            <li>• <strong>Modifier :</strong> Cliquez sur l'icône crayon pour modifier les informations de
-                                la classe</li>
-                            <li>• <strong>Assigner matières :</strong> Cliquez sur l'icône livre pour gérer les matières de
-                                la classe</li>
-                            <li>• <strong>Supprimer :</strong> Cliquez sur l'icône poubelle pour supprimer définitivement la
-                                classe</li>
-                            <li>• Le niveau numérique permet de trier les classes par ordre croissant</li>
+                            <li>• <strong>Gestion séparée :</strong> L'assignation d'enseignants et l'assignation de
+                                matières sont maintenant distinctes</li>
+                            <li>• <strong>Plus de notion de professeur principal :</strong> Tous les enseignants d'une
+                                classe ont le même statut</li>
+                            <li>• <strong>Flexibilité :</strong> Une matière peut avoir plusieurs enseignants selon vos
+                                besoins</li>
                         </ul>
                     </div>
                 </div>

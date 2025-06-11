@@ -47,7 +47,7 @@
                         <p class="text-gray-600">Niveau {{ $class->class_numeric }} •
                             {{ $class->class_description ?: 'Aucune description' }}</p>
                         <p class="text-sm text-gray-500 mt-1">
-                            Professeur : {{ $class->teacher->user->name ?? 'Non assigné' }}
+                            Enseignants assignés : {{ $class->teachers->count() }}
                         </p>
                     </div>
                 </div>
@@ -132,20 +132,25 @@
                             @enderror
                         </div>
 
-                        <!-- Current Teacher Display -->
+                        <!-- Current Teachers Display -->
                         <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Professeur principal actuel</h3>
-                            @if ($class->teacher)
-                                <div class="flex items-center">
-                                    <div
-                                        class="h-10 w-10 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center mr-3">
-                                        <span
-                                            class="text-white font-semibold text-sm">{{ substr($class->teacher->user->name, 0, 1) }}</span>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-gray-900">{{ $class->teacher->user->name }}</p>
-                                        <p class="text-sm text-gray-500">{{ $class->teacher->user->email }}</p>
-                                    </div>
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Enseignants actuellement assignés</h3>
+                            @if ($class->teachers->count() > 0)
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    @foreach ($class->teachers as $teacher)
+                                        <div class="flex items-center p-3 bg-white rounded-lg border border-gray-100">
+                                            <div
+                                                class="h-8 w-8 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center mr-3">
+                                                <span
+                                                    class="text-white font-semibold text-xs">{{ substr($teacher->user->name, 0, 1) }}</span>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">{{ $teacher->user->name }}
+                                                </p>
+                                                <p class="text-xs text-gray-500">{{ $teacher->user->email }}</p>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
                             @else
                                 <div class="flex items-center text-amber-600">
@@ -154,36 +159,65 @@
                                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.077 16.5c-.77.833.192 2.5 1.732 2.5z">
                                         </path>
                                     </svg>
-                                    <span class="font-medium">Aucun professeur assigné</span>
+                                    <span class="font-medium">Aucun enseignant assigné</span>
                                 </div>
                             @endif
                         </div>
 
-                        <!-- Teacher Assignment -->
+                        <!-- Enseignants de la classe -->
                         <div class="group">
-                            <label for="teacher_id" class="block text-sm font-semibold text-gray-700 mb-3">
-                                Nouveau professeur principal
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <svg class="w-5 h-5 inline-block mr-2 text-amber-600" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Modifier les enseignants de la classe
                             </label>
-                            <div class="relative">
-                                <select name="teacher_id" id="teacher_id"
-                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white appearance-none @error('teacher_id') border-red-300 bg-red-50 @enderror">
-                                    <option value="">-- Sélectionner un professeur --</option>
-                                    @foreach ($teachers as $teacher)
-                                        <option value="{{ $teacher->id }}"
-                                            {{ $teacher->id === $class->teacher_id ? 'selected' : '' }}>
-                                            {{ $teacher->user->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </div>
+                            <p class="text-sm text-gray-500 mb-4">
+                                Sélectionnez les enseignants qui sont assignés à cette classe.
+                            </p>
+
+                            <div
+                                class="space-y-3 max-h-64 overflow-y-auto border border-gray-200 rounded-2xl p-4 bg-gray-50">
+                                @foreach ($teachers as $teacher)
+                                    <label
+                                        class="flex items-center space-x-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-amber-300 hover:shadow-sm transition-all duration-200 cursor-pointer group">
+                                        <input type="checkbox" name="teacher_ids[]" value="{{ $teacher->id }}"
+                                            {{ $class->teachers->contains($teacher->id) ? 'checked' : '' }}
+                                            class="h-5 w-5 text-amber-600 focus:ring-amber-500 border-gray-300 rounded transition-colors">
+
+                                        <div
+                                            class="w-10 h-10 bg-gradient-to-r from-amber-400 to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                                            {{ strtoupper(substr($teacher->user->name, 0, 2)) }}
+                                        </div>
+
+                                        <div class="flex-1">
+                                            <p
+                                                class="font-semibold text-gray-800 group-hover:text-amber-700 transition-colors">
+                                                {{ $teacher->user->name }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                {{ $teacher->user->email }}
+                                            </p>
+                                            @if ($teacher->subjects->count() > 0)
+                                                <p class="text-xs text-gray-400 mt-1">
+                                                    Matières : {{ $teacher->subjects->pluck('name')->join(', ') }}
+                                                </p>
+                                            @endif
+                                        </div>
+
+                                        @if ($class->teachers->contains($teacher->id))
+                                            <div
+                                                class="px-2 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-lg">
+                                                Assigné
+                                            </div>
+                                        @endif
+                                    </label>
+                                @endforeach
                             </div>
-                            @error('teacher_id')
+
+                            @error('teacher_ids')
                                 <p class="mt-2 text-sm text-red-600 flex items-center">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -193,6 +227,29 @@
                                     {{ $message }}
                                 </p>
                             @enderror
+                        </div>
+
+                        <!-- Actions rapides pour les enseignants -->
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Actions rapides</h4>
+                            <div class="flex flex-wrap gap-3">
+                                <button type="button" onclick="selectAllTeachers()"
+                                    class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Sélectionner tous
+                                </button>
+                                <button type="button" onclick="unselectAllTeachers()"
+                                    class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Désélectionner tous
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Class Description -->
@@ -260,16 +317,50 @@
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-sm font-semibold text-amber-800">Attention</h3>
+                        <h3 class="text-sm font-semibold text-amber-800">Important</h3>
                         <ul class="mt-2 text-sm text-amber-700 space-y-1">
-                            <li>• La modification du nom peut affecter les références existantes</li>
-                            <li>• Le changement de professeur principal prendra effet immédiatement</li>
-                            <li>• Les étudiants et matières assignés ne seront pas affectés</li>
-                            <li>• Assurez-vous que les modifications sont appropriées avant de sauvegarder</li>
+                            <li>• La modification des enseignants ne affecte pas automatiquement les matières assignées</li>
+                            <li>• Les assignations de matières restent inchangées</li>
+                            <li>• Utilisez la section "Assigner matières" pour gérer les matières et leurs enseignants</li>
+                            <li>• Les étudiants ne seront pas affectés par ces modifications</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function selectAllTeachers() {
+            document.querySelectorAll('input[name="teacher_ids[]"]').forEach(checkbox => {
+                checkbox.checked = true;
+                checkbox.closest('label').classList.add('border-amber-500', 'bg-amber-50');
+                checkbox.closest('label').classList.remove('border-gray-100');
+            });
+        }
+
+        function unselectAllTeachers() {
+            document.querySelectorAll('input[name="teacher_ids[]"]').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('label').classList.remove('border-amber-500', 'bg-amber-50');
+                checkbox.closest('label').classList.add('border-gray-100');
+            });
+        }
+
+        // Dynamic styling on checkbox change
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[name="teacher_ids[]"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const label = this.closest('label');
+                    if (this.checked) {
+                        label.classList.add('border-amber-500', 'bg-amber-50');
+                        label.classList.remove('border-gray-100');
+                    } else {
+                        label.classList.remove('border-amber-500', 'bg-amber-50');
+                        label.classList.add('border-gray-100');
+                    }
+                });
+            });
+        });
+    </script>
 @endsection
